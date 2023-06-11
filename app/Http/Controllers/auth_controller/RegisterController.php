@@ -46,7 +46,7 @@ class RegisterController extends Controller
             'about_me' => $request->about_me,
             'type_of_account' => $account_type,
         ]);
-        $token = $user->createToken('auth');
+        $token = $user->createToken('authToken');
         return $this->get_response_for_login($user, 200, "resgister completed",$token->plainTextToken);
     }
 }

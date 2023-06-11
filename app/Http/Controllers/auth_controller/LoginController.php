@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\auth_controller;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\response_trait\MyResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,7 +34,7 @@ class LoginController extends Controller
             // he is a real user
             $user = $request->user();
 
-            $token = $user->createToken('auth');
+            $token = $user->createToken('authToken');
 
             return $this->get_response_for_login($user, 200, "login completed", $token->plainTextToken);
         }
@@ -44,16 +43,11 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        $user = User::find(1);
-        return $user;
-        if (!Auth::check()) {
-            return $this->get_response_with_only_message_and_status(400, "already loged out");
-        } else {
-            Auth::logout();
-            if (!Auth::check()) {
-                return $this->get_response_with_only_message_and_status(200, "logout completed");
-            }
-            return $this->get_response_with_only_message_and_status(400, "error while loging out");
+        $request->user()->currentAccessToken()->delete();
+        if ($request->user('sanctum')) {
+            return $this->get_response_with_only_message_and_status(200, "logout completed");
         }
+        return $this->get_response_with_only_message_and_status(400, "error while loging out");
+
     }
 }

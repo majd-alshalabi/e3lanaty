@@ -21,6 +21,6 @@ Route::post('/register', [RegisterController::class, 'register']);
 
 
 
-Route::group(['middleware' => 'auth:api'], function () {
+Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/logout', [LoginController::class, 'logout']);
 });
