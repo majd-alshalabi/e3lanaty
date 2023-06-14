@@ -55,20 +55,9 @@ class AdsController extends Controller
                 ]);
             }
         }
-        $images = array();
-        if ($request->images != null) {
-            foreach ($request->images as $item) {
-                $imageName = "public/images/" . time() . '.' . $item->extension();
-                $item->move(public_path('images'), $imageName);
-                $images[] = Image::create([
-                    'path' => $imageName,
-                    'ads_id' => $ads->id,
-                ]);
-            }
-        }
         $ads->user = $user;
         $ads->advantages = $advantages;
-        $ads->images = $images;
+        $ads->images = $request->images;
         $ads->like = 0;
         $ads->comment_count = 0;
         $ads->comment = null;
@@ -81,6 +70,19 @@ class AdsController extends Controller
         return $this->get_response([$ads], 200, "add completed");
     }
 
+    public function uploadImage(Request $request)
+    {
+
+        $imageName = '';
+        if ($request->image != null) {
+            $imageName = "public/images/" . time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images'), $imageName);
+        }else {
+            return $this->get_error_response(401, "enter file to upload");
+        }
+
+        return $this->get_response($imageName, 200, "add completed");
+    }
    
     public function getAllAds(Request $request)
     {
@@ -139,5 +141,8 @@ class AdsController extends Controller
 
         return $this->get_response($ads, 200, "completed");
     }
+
+
+
 
 }

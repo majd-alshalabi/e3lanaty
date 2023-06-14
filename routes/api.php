@@ -37,6 +37,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/logout', [LoginController::class, 'logout']);
     Route::post('/logout_admin', [LoginController::class, 'logoutAdmin']);
     Route::post('/add_ads', [AdsController::class, 'addAds']);
+    Route::post('/upload_image', [AdsController::class, 'uploadImage']);
     Route::get('/get_all_ads', [AdsController::class, 'getAllAds']);
     Route::get('/get_all_favorite', [FavoriteController::class, 'getAllFavorite']);
     Route::post('/get_ads_by_id', [AdsController::class, 'get_ads_by_id']);
