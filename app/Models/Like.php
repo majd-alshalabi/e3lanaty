@@ -12,6 +12,8 @@ class Like extends Model
     
     protected $fillable = [
         'like',
+        'user_id',
+        'ads_id',
     ];
 
     public function users(): BelongsTo

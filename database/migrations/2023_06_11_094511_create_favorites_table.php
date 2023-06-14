@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('favorites', function (Blueprint $table) {
             $table->id();
             $table->boolean('favorite')->default(0);
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('ads_id');
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('ads_id')->nullable();
             $table->foreign('ads_id')->references('id')->on('ads')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

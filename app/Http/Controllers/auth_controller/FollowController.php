@@ -1,0 +1,64 @@
+<?php
+
+namespace App\Http\Controllers\auth_controller;
+
+use App\Http\Controllers\Controller;
+use App\Models\Follow;
+use App\Models\User;
+use App\response_trait\MyResponseTrait;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
+class FollowController extends Controller
+{
+    use MyResponseTrait;
+
+    public function addFollow(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|integer',
+            'follow' => 'required|boolean'
+        ]);
+
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return $this->get_error_response(401, $messages);
+        }
+
+        $user = $request->user();
+        $followed_exists = User::where('id' , $request->user_id)->exists();
+        if(!$followed_exists)
+        {
+            return $this->get_error_response(401, "the user you are following is no longer existing");
+        }
+        if($user->id == $request->user_id)
+        {
+            return $this->get_error_response(401, "you can't follow yourself");
+        }
+        if($request->follow){
+            $exists = Follow::where('follower_id' , $user->id)
+                -> where('followed_id' , $request->user_id)
+                ->exists();
+            if($exists){
+                return $this->get_error_response(401, "you have already followed this user");
+            } 
+            else {
+                Follow::create(['follower_id' => $user->id , "followed_id" => $request->user_id]);
+            }
+        }else {
+            $exists = Follow::where('follower_id' , $user->id)
+                -> where('followed_id' , $request->user_id)
+                ->exists();
+            if(!$exists){
+                return $this->get_error_response(401, "you have not followed this user yet");
+            } 
+            else {
+                Follow::where('follower_id', $user->id)
+                    ->where('followed_id', $request->user_id)
+                    ->delete();
+            }
+        }
+        return $this->get_response([], 200, "add follow completed");
+    }
+}

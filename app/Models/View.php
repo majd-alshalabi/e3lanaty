@@ -2,19 +2,25 @@
 
 namespace App\Models;
 
+use App\Models\Ads;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Advantage extends Model
+class View extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'advantage',
+        'user_id',
         'ads_id',
     ];
 
+    public function users(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 
     public function ads(): BelongsTo
     {

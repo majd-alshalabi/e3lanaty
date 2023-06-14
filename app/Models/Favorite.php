@@ -12,6 +12,8 @@ class Favorite extends Model
 
     protected $fillable = [
         'favorite',
+        'user_id',
+        'ads_id',
     ];
 
     public function users(): BelongsTo

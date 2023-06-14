@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -30,6 +31,7 @@ class User extends Authenticatable
         'rate',
         'type_of_account',
         'point',
+        'fcm_token',
     ];
 
     /**
@@ -74,5 +76,17 @@ class User extends Authenticatable
     public function feedBacks(): HasMany
     {
         return $this->hasMany(FeedBack::class);
+    }
+    public function userSetting(): HasOne
+    {
+        return $this->hasOne(UserSetting::class);
+    }
+    public function follows(): HasMany
+    {
+        return $this->hasMany(Follow::class);
+    }
+    public function views(): HasMany
+    {
+        return $this->hasMany(View::class);
     }
 }

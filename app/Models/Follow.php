@@ -6,18 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Advantage extends Model
+class Follow extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'advantage',
-        'ads_id',
+        'follower_id',
+        'followed_id',
     ];
-
-
-    public function ads(): BelongsTo
+    public function users(): BelongsTo
     {
-        return $this->belongsTo(Ads::class, 'ads_id', 'id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\View;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +21,7 @@ class Ads extends Model
         'status',
         'priorty',
         'link',
+        'user_id',
     ];
 
     public function likes(): HasMany
@@ -50,5 +52,10 @@ class Ads extends Model
     public function users(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function views(): HasMany
+    {
+        return $this->hasMany(View::class);
     }
 }
