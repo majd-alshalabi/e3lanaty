@@ -40,6 +40,6 @@ Trait MyResponseTrait
             'status'=>$status,
             'message'=>$msg
         ];
-        return response($arr);
+        return response($arr,400);
     }
 }
