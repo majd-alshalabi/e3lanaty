@@ -5,6 +5,9 @@ namespace App\Models\constant;
 
 class Constant 
 {
+    public const ADS_NOTIFICATION_TYPE = 1;
+    public const FEED_BACK_NOTIFICATION_TYPE = 2;
+    
     public const NUM_OF_PAGE = 10;
     public const NOTIFICATION_DEFAULT_TYPE = 0;
 

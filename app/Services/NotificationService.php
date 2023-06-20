@@ -10,7 +10,9 @@ class NotificationService
     {
 
         $SERVER_API_KEY = Constant::SERVER_KEY; 
+        $ads_notification_type = Constant::ADS_NOTIFICATION_TYPE; 
         $extraData = [
+            'notificationType' => $ads_notification_type,
             'extra' => $ads,
         ];
         $users = User::where('id' , '!=' , $user_id)->get();

@@ -14,6 +14,8 @@ use App\response_trait\MyResponseTrait;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 class AdsController extends Controller
 {
@@ -22,7 +24,7 @@ class AdsController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'description' => 'required|string',
-            'type' => 'required|string',
+            'type' => 'required|integer',
             'price' => 'required|regex:/^\d+(\.\d{1,2})?$/',
             'name' => 'required|string',
             'link' => 'required|string',
@@ -55,9 +57,18 @@ class AdsController extends Controller
                 ]);
             }
         }
+        $images = array();
+        if ($request->images != null) {
+            foreach ($request->images as $item) {
+                $images[] = Image::create([
+                    'path' => $item,
+                    'ads_id' => $ads->id,
+                ]);
+            }
+        }
         $ads->user = $user;
         $ads->advantages = $advantages;
-        $ads->images = $request->images;
+        $ads->images = $images;
         $ads->like = 0;
         $ads->comment_count = 0;
         $ads->comment = null;
@@ -70,10 +81,27 @@ class AdsController extends Controller
         return $this->get_response([$ads], 200, "add completed");
     }
 
+        public function getImage($filename)
+    {
+        $path = public_path('images').'/' . $filename;
+
+        if (!File::exists($path)) {
+            abort(404);
+        }
+
+        $file = File::get($path);
+        $type = File::mimeType($path);
+
+        $response = Response::make($file, 200);
+        $response->header('Content-Type', $type);
+
+        return $response;
+    }
     public function uploadImage(Request $request)
     {
 
         $imageName = '';
+    
         if ($request->image != null) {
             $imageName = "public/images/" . time() . '.' . $request->image->extension();
             $request->image->move(public_path('images'), $imageName);

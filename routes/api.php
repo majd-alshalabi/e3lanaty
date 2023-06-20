@@ -30,6 +30,7 @@ Route::post('/login_admin', [LoginController::class, 'loginAdmin']);
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/register_admin', [RegisterController::class, 'registerAdmin']);
 
+Route::get('/storage/public/images/{filename}', [AdsController::class, 'getImage']);
 
 
 
