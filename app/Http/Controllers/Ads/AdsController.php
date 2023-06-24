@@ -114,7 +114,7 @@ class AdsController extends Controller
    
     public function getAllAds(Request $request)
     {
-        $ads = Ads::with('advantages')
+        $ads = Ads::orderBy('created_at', 'desc')->with('advantages')
             ->with('images')
             ->paginate(Constant::NUM_OF_PAGE)
         ;
@@ -130,7 +130,13 @@ class AdsController extends Controller
                 $item->user = $user[0];
             }
             $item->like = count($like);
-            $item->comment = $comment->items();
+            $commentRes = [];
+            foreach ($comment->items() as $item2) {
+                $commentUser = User::where('id', '=', $item2->user_id)->get();
+                $item2->user = $commentUser[0];
+                $commentRes[] = $item2;
+            }
+            $item->comment = $commentRes;
             $item->comment_count = $comment_count;
         }
 

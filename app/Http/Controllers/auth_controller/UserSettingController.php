@@ -38,4 +38,21 @@ class UserSettingController extends Controller
             return $this->get_error_response(401, 'you have not setting to update!');
         }
     }
+    public function uploadImage(Request $request)
+    {
+
+        $imageName = '';
+    
+        if ($request->image != null) {
+            $imageName = "public/images/" . time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images'), $imageName);
+            $user = $request->user();
+            $user->image = $imageName;
+            $user->update();
+        }else {
+            return $this->get_error_response(401, "enter file to upload");
+        }
+        
+        return $this->get_response($imageName, 200, "add completed");
+    }
 }
