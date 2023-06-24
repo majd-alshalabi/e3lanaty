@@ -74,16 +74,16 @@ class AdsController extends Controller
         $ads->comment = null;
         try {
             $notificationService = new NotificationService();
-            $notificationService->sendNotification($ads,$user->id);
+            $notificationService->sendNotification($ads, $user->id);
         } catch (e) {
 
         }
         return $this->get_response([$ads], 200, "add completed");
     }
 
-        public function getImage($filename)
+    public function getImage($filename)
     {
-        $path = public_path('images').'/' . $filename;
+        $path = public_path('images') . '/' . $filename;
 
         if (!File::exists($path)) {
             abort(404);
@@ -101,25 +101,30 @@ class AdsController extends Controller
     {
 
         $imageName = '';
-    
+
         if ($request->image != null) {
             $imageName = "public/images/" . time() . '.' . $request->image->extension();
             $request->image->move(public_path('images'), $imageName);
-        }else {
+        } else {
             return $this->get_error_response(401, "enter file to upload");
         }
 
         return $this->get_response($imageName, 200, "add completed");
     }
-   
+
     public function getAllAds(Request $request)
     {
         $ads = Ads::orderBy('created_at', 'desc')->with('advantages')
             ->with('images')
             ->paginate(Constant::NUM_OF_PAGE)
         ;
+        $currentUser = $request->user(); 
         foreach ($ads as $item) {
             $like = Like::where('ads_id', '=', $item->id)->get();
+            $isLike = Like::where([
+                ['ads_id', '=', $item->id],
+                ['user_id', '=', $currentUser->id]
+            ])->count() > 0;
             $comment = Comment::where('ads_id', '=', $item->id)->paginate(Constant::NUM_OF_PAGE);
             $comment_count = Comment::where('ads_id', '=', $item->id)->count();
             $user = User::where('id', '=', $item->user_id)->get();
@@ -137,6 +142,7 @@ class AdsController extends Controller
                 $commentRes[] = $item2;
             }
             $item->comment = $commentRes;
+            $item->isLike = $isLike;
             $item->comment_count = $comment_count;
         }
 
@@ -154,14 +160,21 @@ class AdsController extends Controller
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
         }
+        $currentUser = $request->user(); 
+
         $ads = Ads::where('id', $request->ads_id)
             ->with('advantages')
             ->with('images')
             ->first();
+        $user = User::where('id', '=', $ads->user_id)->get();
         $like = Like::where('ads_id', '=', $ads->id)->get();
+        $isLike = Like::where([
+            ['ads_id', '=', $ads->id],
+            ['user_id', '=', $currentUser->id]
+        ])->count() > 0;
         $comment = Comment::where('ads_id', '=', $ads->id)->paginate(Constant::NUM_OF_PAGE);
         $comment_count = Comment::where('ads_id', '=', $ads->id)->count();
-        $user = User::where('id', '=', $ads->user_id)->get();
+
 
         if (count($user) == 0) {
             $ads->user = null;
@@ -169,6 +182,7 @@ class AdsController extends Controller
             $ads->user = $user[0];
         }
         $ads->like = count($like);
+        $ads->isLike = $isLike;
         $ads->comment = $comment->items();
         $ads->comment_count = $comment_count;
 
