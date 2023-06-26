@@ -149,6 +149,52 @@ class AdsController extends Controller
         return $this->get_response($ads->items(), 200, "completed");
     }
 
+    public function getAdsByUserId(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return $this->get_error_response(401, $messages);
+        }
+
+        $ads = Ads::where('user_id' , $request->user_id)->orderBy('created_at', 'desc')->with('advantages')
+            ->with('images')->get()
+        ;
+        $currentUser = $request->user(); 
+        foreach ($ads as $item) {
+            $like = Like::where('ads_id', '=', $item->id)->get();
+            $isLike = Like::where([
+                ['ads_id', '=', $item->id],
+                ['user_id', '=', $currentUser->id]
+            ])->count() > 0;
+            $comment = Comment::where('ads_id', '=', $item->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
+            $comment_count = Comment::where('ads_id', '=', $item->id)->count();
+            $user = User::where('id', '=', $item->user_id)->get();
+
+            if (count($user) == 0) {
+                $item->user = null;
+            } else {
+                $item->user = $user[0];
+            }
+            $item->like = count($like);
+            $commentRes = [];
+            foreach ($comment->items() as $item2) {
+                $commentUser = User::where('id', '=', $item2->user_id)->get();
+                $item2->user = $commentUser[0];
+                $commentRes[] = $item2;
+            }
+            $item->comment = $commentRes;
+            $item->isLike = $isLike;
+            $item->comment_count = $comment_count;
+        }
+
+        return $this->get_response($ads, 200, "completed");
+    }
+
     public function get_ads_by_id(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -189,8 +235,6 @@ class AdsController extends Controller
 
         return $this->get_response($ads, 200, "completed");
     }
-
-
 
 
 }

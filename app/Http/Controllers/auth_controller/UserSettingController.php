@@ -55,4 +55,22 @@ class UserSettingController extends Controller
         
         return $this->get_response($imageName, 200, "add completed");
     }
+    public function updateName(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+        ]);
+
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return $this->get_error_response(401, $messages);
+        }
+        $user = $request->user();
+        $user->name = $request->name ;
+        $user->update();
+        
+        return $this->get_response($user, 200, "update completed");
+    }
 }

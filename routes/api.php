@@ -40,7 +40,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/add_ads', [AdsController::class, 'addAds']);
     Route::post('/upload_image', [AdsController::class, 'uploadImage']);
     Route::post('/update_profile_image', [UserSettingController::class, 'uploadImage']);
+    Route::post('/update_name', [UserSettingController::class, 'updateName']);
     Route::get('/get_all_ads', [AdsController::class, 'getAllAds']);
+    Route::post('/get_ads_by_user_id', [AdsController::class, 'getAdsByUserId']);
     Route::post('/get_all_comment', [CommentController::class, 'getAllComment']);
     Route::get('/get_all_favorite', [FavoriteController::class, 'getAllFavorite']);
     Route::post('/get_ads_by_id', [AdsController::class, 'get_ads_by_id']);
@@ -49,6 +51,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/favorite', [FavoriteController::class, 'addFavorite']);
     Route::post('/comment', [CommentController::class, 'addComment']);
     Route::post('/follow', [FollowController::class, 'addFollow']);
+    Route::get('/get_follower_following_favorite_count', [FollowController::class, 'getFollowingAndFollowerAndFavorite']);
     Route::post('/add_feed_back', [FeedBackController::class, 'addFeedback']);
     Route::post('/delete_feed_back', [FeedBackController::class, 'deleteFeedback']);
     Route::post('/update_notification_setting', [UserSettingController::class, 'updateNotificationType']);
