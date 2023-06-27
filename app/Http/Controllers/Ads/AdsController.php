@@ -7,6 +7,8 @@ use App\Models\Ads;
 use App\Models\Advantage;
 use App\Models\Comment;
 use App\Models\constant\Constant;
+use App\Models\Favorite;
+use App\Models\Follow;
 use App\Models\Image;
 use App\Models\Like;
 use App\Models\User;
@@ -72,11 +74,11 @@ class AdsController extends Controller
         $ads->like = 0;
         $ads->comment_count = 0;
         $ads->comment = null;
+        $ads->isInFavorite = false;
         try {
             $notificationService = new NotificationService();
             $notificationService->sendNotification($ads, $user->id);
         } catch (e) {
-
         }
         return $this->get_response([$ads], 200, "add completed");
     }
@@ -125,7 +127,7 @@ class AdsController extends Controller
                 ['ads_id', '=', $item->id],
                 ['user_id', '=', $currentUser->id]
             ])->count() > 0;
-            $comment = Comment::where('ads_id', '=', $item->id)->paginate(Constant::NUM_OF_PAGE);
+            $comment = Comment::where('ads_id', '=', $item->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
             $comment_count = Comment::where('ads_id', '=', $item->id)->count();
             $user = User::where('id', '=', $item->user_id)->get();
 
@@ -144,6 +146,11 @@ class AdsController extends Controller
             $item->comment = $commentRes;
             $item->isLike = $isLike;
             $item->comment_count = $comment_count;
+            $isInFavorite = Favorite::where([
+                ['ads_id', '=', $item->id],
+                ['user_id', '=', $currentUser->id]
+            ])->count() > 0;
+            $item->isInFavorite = $isInFavorite;
         }
 
         return $this->get_response($ads->items(), 200, "completed");
@@ -190,9 +197,17 @@ class AdsController extends Controller
             $item->comment = $commentRes;
             $item->isLike = $isLike;
             $item->comment_count = $comment_count;
+            $isInFavorite = Favorite::where([
+                ['ads_id', '=', $item->id],
+                ['user_id', '=', $currentUser->id]
+            ])->count() > 0;
+            $item->isInFavorite = $isInFavorite;
         }
-
-        return $this->get_response($ads, 200, "completed");
+        $isFollowing = Follow::where([
+            ['follower_id', '=', $request->user()->id],
+            ['followed_id', '=', $request->user_id]
+        ])->count() > 0;
+        return $this->get_response(["ads" => $ads , "isFollowing" => $isFollowing], 200, "completed");
     }
 
     public function get_ads_by_id(Request $request)
@@ -218,7 +233,7 @@ class AdsController extends Controller
             ['ads_id', '=', $ads->id],
             ['user_id', '=', $currentUser->id]
         ])->count() > 0;
-        $comment = Comment::where('ads_id', '=', $ads->id)->paginate(Constant::NUM_OF_PAGE);
+        $comment = Comment::where('ads_id', '=', $ads->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
         $comment_count = Comment::where('ads_id', '=', $ads->id)->count();
 
 
@@ -231,7 +246,11 @@ class AdsController extends Controller
         $ads->isLike = $isLike;
         $ads->comment = $comment->items();
         $ads->comment_count = $comment_count;
-
+        $isInFavorite = Favorite::where([
+            ['ads_id', '=', $request->ads_id],
+            ['user_id', '=', $currentUser->id]
+        ])->count() > 0;
+        $ads->isInFavorite = $isInFavorite;
 
         return $this->get_response($ads, 200, "completed");
     }

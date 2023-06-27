@@ -55,7 +55,7 @@ class FavoriteController extends Controller
                     ->delete();
             }
         }
-        return $this->get_response([], 200, "add favorite completed");
+        return $this->get_response($request->favorite, 200, "add favorite completed");
     }
     public function getAllFavorite(Request $request)
     {
@@ -74,6 +74,7 @@ class FavoriteController extends Controller
             $ads->like = count($like);
             $ads->comment = $comment->items();
             $ads->comment_count = $comment_count;
+            $ads->isInFavorite = true ;
             $favorit->ads = $ads;
         }
         return $this->get_response($favorits, 200, "get all favorite completed");

@@ -56,7 +56,7 @@ class FollowController extends Controller
                     ->delete();
             }
         }
-        return $this->get_response([], 200, "add follow completed");
+        return $this->get_response($request->follow, 200, "add follow completed");
     }
     public function getFollowingAndFollowerAndFavorite(Request $request)
     {
