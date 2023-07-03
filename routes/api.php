@@ -4,6 +4,7 @@ use App\Http\Controllers\Ads\AdsController;
 use App\Http\Controllers\Ads\CommentController;
 use App\Http\Controllers\Ads\FavoriteController;
 use App\Http\Controllers\Ads\LikeController;
+use App\Http\Controllers\auth_controller\AdminController;
 use App\Http\Controllers\auth_controller\FeedBackController;
 use App\Http\Controllers\auth_controller\FollowController;
 use App\Http\Controllers\auth_controller\LoginController;
@@ -42,6 +43,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/update_profile_image', [UserSettingController::class, 'uploadImage']);
     Route::post('/update_name', [UserSettingController::class, 'updateName']);
     Route::get('/get_all_ads', [AdsController::class, 'getAllAds']);
+    Route::get('/get_all_user', [AdminController::class, 'getAllUser']);
+    Route::get('/get_all_ads_with_pending_status', [AdsController::class, 'getAllAdsWithPenddingState']);
+    Route::get('/get_all_ads_with_accepted_status', [AdsController::class, 'getAllAdsWithAcceptedState']);
+    Route::get('/get_all_ads', [AdsController::class, 'getAllAds']);
     Route::post('/get_ads_by_user_id', [AdsController::class, 'getAdsByUserId']);
     Route::post('/get_all_comment', [CommentController::class, 'getAllComment']);
     Route::get('/get_all_favorite', [FavoriteController::class, 'getAllFavorite']);
@@ -56,4 +61,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/delete_feed_back', [FeedBackController::class, 'deleteFeedback']);
     Route::post('/update_notification_setting', [UserSettingController::class, 'updateNotificationType']);
     Route::post('/update_fcm_token', [UpdateFcmTokenController::class, 'updateFcmToken']);
+});
+
+Route::group(['middleware' => 'auth:sanctum' , "prefix" => "admin"], function () {
+    Route::post('/acceptAds', [AdminController::class, 'acceptAds']);
 });

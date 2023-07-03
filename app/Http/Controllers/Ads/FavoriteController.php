@@ -70,7 +70,11 @@ class FavoriteController extends Controller
             $comment_count = Comment::where('ads_id', '=', $ads->id)->count();
 
             $ads->user = $user;
-
+            $isLike = Like::where([
+                ['ads_id', '=', $ads->id],
+                ['user_id', '=', $user->id]
+            ])->count() > 0;
+            $ads->isLike = $isLike;
             $ads->like = count($like);
             $ads->comment = $comment->items();
             $ads->comment_count = $comment_count;

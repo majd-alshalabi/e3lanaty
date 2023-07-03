@@ -156,6 +156,91 @@ class AdsController extends Controller
         return $this->get_response($ads->items(), 200, "completed");
     }
 
+    public function getAllAdsWithPenddingState(Request $request)
+    {
+        $ads = Ads::where('status' , Constant::ADS_PENDDING_STATE)->orderBy('created_at', 'desc')->with('advantages')
+            ->with('images')
+            ->paginate(Constant::NUM_OF_PAGE)
+        ;
+        $currentUser = $request->user(); 
+        foreach ($ads as $item) {
+            $like = Like::where('ads_id', '=', $item->id)->get();
+            $isLike = Like::where([
+                ['ads_id', '=', $item->id],
+                ['user_id', '=', $currentUser->id]
+            ])->count() > 0;
+            $comment = Comment::where('ads_id', '=', $item->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
+            $comment_count = Comment::where('ads_id', '=', $item->id)->count();
+            $user = User::where('id', '=', $item->user_id)->get();
+
+            if (count($user) == 0) {
+                $item->user = null;
+            } else {
+                $item->user = $user[0];
+            }
+            $item->like = count($like);
+            $commentRes = [];
+            foreach ($comment->items() as $item2) {
+                $commentUser = User::where('id', '=', $item2->user_id)->get();
+                $item2->user = $commentUser[0];
+                $commentRes[] = $item2;
+            }
+            $item->comment = $commentRes;
+            $item->isLike = $isLike;
+            $item->comment_count = $comment_count;
+            $isInFavorite = Favorite::where([
+                ['ads_id', '=', $item->id],
+                ['user_id', '=', $currentUser->id]
+            ])->count() > 0;
+            $item->isInFavorite = $isInFavorite;
+        }
+
+        return $this->get_response($ads->items(), 200, "completed");
+    }
+
+    public function getAllAdsWithAcceptedState(Request $request)
+    {
+        $ads = Ads::where('status' , Constant::ADS_ACCEPTED_STATE) ->orderBy('created_at', 'desc')->with('advantages')
+            ->with('images')
+            ->paginate(Constant::NUM_OF_PAGE)
+        ;
+        $currentUser = $request->user(); 
+        foreach ($ads as $item) {
+            $like = Like::where('ads_id', '=', $item->id)->get();
+            $isLike = Like::where([
+                ['ads_id', '=', $item->id],
+                ['user_id', '=', $currentUser->id]
+            ])->count() > 0;
+            $comment = Comment::where('ads_id', '=', $item->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
+            $comment_count = Comment::where('ads_id', '=', $item->id)->count();
+            $user = User::where('id', '=', $item->user_id)->get();
+
+            if (count($user) == 0) {
+                $item->user = null;
+            } else {
+                $item->user = $user[0];
+            }
+            $item->like = count($like);
+            $commentRes = [];
+            foreach ($comment->items() as $item2) {
+                $commentUser = User::where('id', '=', $item2->user_id)->get();
+                $item2->user = $commentUser[0];
+                $commentRes[] = $item2;
+            }
+            $item->comment = $commentRes;
+            $item->isLike = $isLike;
+            $item->comment_count = $comment_count;
+            $isInFavorite = Favorite::where([
+                ['ads_id', '=', $item->id],
+                ['user_id', '=', $currentUser->id]
+            ])->count() > 0;
+            $item->isInFavorite = $isInFavorite;
+        }
+
+        return $this->get_response($ads->items(), 200, "completed");
+    }
+
+
     public function getAdsByUserId(Request $request)
     {
 

@@ -15,12 +15,8 @@ class NotificationService
             'notificationType' => $ads_notification_type,
             'extra' => $ads,
         ];
-        $users = User::where('id' , '!=' , $user_id)->get();
-        $tokens = [];
-
-        foreach ($users as $user) {
-            $tokens[] = $user->fcm_token;
-        }
+        $users = User::where('id', '!=', $user_id)->get();
+        $tokens = $users->pluck('fcm_token')->unique()->toArray();
         $data = [
             "registration_ids" => $tokens,
             "notification" => [

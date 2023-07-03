@@ -5,6 +5,18 @@ namespace App\Models\constant;
 
 class Constant 
 {
+
+    /// ads states 
+    public const ADS_ACCEPTED_STATE = 1;
+
+    public const ADS_PENDDING_STATE = 0;
+
+
+    
+
+
+    ////
+
     public const ADS_NOTIFICATION_TYPE = 1;
     public const FEED_BACK_NOTIFICATION_TYPE = 2;
     
