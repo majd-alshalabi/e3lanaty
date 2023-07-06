@@ -8,6 +8,7 @@ use App\Models\Comment;
 use App\Models\constant\Constant;
 use App\Models\User;
 use App\response_trait\MyResponseTrait;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -21,7 +22,6 @@ class CommentController extends Controller
             'ads_id' => 'required|integer',
         ]);
 
-
         if ($validator->fails()) {
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
@@ -29,6 +29,8 @@ class CommentController extends Controller
 
         $user = $request->user();
         $ads = Ads::where("id", "=", $request->ads_id);
+        $adsUser = User::where("id" , $ads->user_id);
+        NotificationService::
         if ($ads == null) {
             return $this->get_error_response(401, "this ad isn't avalible");
         }

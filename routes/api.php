@@ -44,7 +44,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/update_name', [UserSettingController::class, 'updateName']);
     Route::get('/get_all_ads', [AdsController::class, 'getAllAds']);
     Route::get('/get_all_user', [AdminController::class, 'getAllUser']);
+    Route::post('/delete_ads', [AdsController::class, 'deleteAds']);
     Route::get('/get_all_ads_with_pending_status', [AdsController::class, 'getAllAdsWithPenddingState']);
+    Route::get('/get_user_pending_ads', [AdsController::class, 'getUserPendingAds']);
     Route::get('/get_all_ads_with_accepted_status', [AdsController::class, 'getAllAdsWithAcceptedState']);
     Route::get('/get_all_ads', [AdsController::class, 'getAllAds']);
     Route::post('/get_ads_by_user_id', [AdsController::class, 'getAdsByUserId']);
@@ -65,4 +67,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
 Route::group(['middleware' => 'auth:sanctum' , "prefix" => "admin"], function () {
     Route::post('/acceptAds', [AdminController::class, 'acceptAds']);
+    Route::post('/delete_ads_for_admin', [AdminController::class, 'deleteAdsForAdmin']);
+    Route::post('/delete_comment_admin', [AdminController::class, 'deleteCommentForAdmin']);
 });
