@@ -46,7 +46,7 @@ class AdsController extends Controller
             'price' => $request->price,
             'link' => $request->link,
             'extra_description' => $request->extra_description,
-            'status' => 0,
+            'status' => Constant::ADS_PENDDING_STATE,
             'priority' => 0,
             'user_id' => $user->id,
         ]);
@@ -75,12 +75,30 @@ class AdsController extends Controller
         $ads->comment_count = 0;
         $ads->comment = null;
         $ads->isInFavorite = false;
-        try {
-            $notificationService = new NotificationService();
-            $notificationService->sendNotification($ads, $user->id);
-        } catch (e) {
-        }
+
         return $this->get_response([$ads], 200, "add completed");
+    }
+
+    public function deleteAds(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ads_id' => 'required|integer',
+        ]);
+
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return $this->get_error_response(401, $messages);
+        }
+        $user = $request->user();
+        $ads = Ads::where([["id" , $request->ads_id],["user_id",$user->id]]);
+        if($ads != null){
+            $ads->delete();
+        }
+        else {
+            return $this->get_error_response(401, "this ads is not your's you cant delete it");
+        }
+        return $this->get_response([], 200, "delete completed");
     }
 
     public function getImage($filename)
@@ -154,6 +172,54 @@ class AdsController extends Controller
         }
 
         return $this->get_response($ads->items(), 200, "completed");
+    }
+
+    public function getUserPendingAds(Request $request)
+    {
+        
+        $currentUser = $request->user(); 
+
+        $ads = Ads::where([
+            ['status', '=', Constant::ADS_PENDDING_STATE],
+            ['user_id', '=', $currentUser->id]
+        ])
+        ->orderBy('created_at', 'desc')
+        ->with('advantages')
+        ->with('images')
+        ->get();
+        foreach ($ads as $item) {
+            $like = Like::where('ads_id', '=', $item->id)->get();
+            $isLike = Like::where([
+                ['ads_id', '=', $item->id],
+                ['user_id', '=', $currentUser->id]
+            ])->count() > 0;
+            $comment = Comment::where('ads_id', '=', $item->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
+            $comment_count = Comment::where('ads_id', '=', $item->id)->count();
+            $user = User::where('id', '=', $item->user_id)->get();
+
+            if (count($user) == 0) {
+                $item->user = null;
+            } else {
+                $item->user = $user[0];
+            }
+            $item->like = count($like);
+            $commentRes = [];
+            foreach ($comment->items() as $item2) {
+                $commentUser = User::where('id', '=', $item2->user_id)->get();
+                $item2->user = $commentUser[0];
+                $commentRes[] = $item2;
+            }
+            $item->comment = $commentRes;
+            $item->isLike = $isLike;
+            $item->comment_count = $comment_count;
+            $isInFavorite = Favorite::where([
+                ['ads_id', '=', $item->id],
+                ['user_id', '=', $currentUser->id]
+            ])->count() > 0;
+            $item->isInFavorite = $isInFavorite;
+        }
+
+        return $this->get_response($ads, 200, "completed");
     }
 
     public function getAllAdsWithPenddingState(Request $request)
