@@ -34,7 +34,9 @@ class LoginController extends Controller
         if (Auth::attempt($credentials)) {
             // he is a real user
             $user = $request->user();
-
+            if($user->blocked){
+                return $this->get_error_response(400, "this user is blocked because of an acceptable action");
+            }
             $userSetting = UserSetting::where('id', '=', $user->id)->first();
             $user->user_setting = $userSetting;
 

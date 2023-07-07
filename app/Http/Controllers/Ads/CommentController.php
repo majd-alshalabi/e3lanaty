@@ -10,6 +10,7 @@ use App\Models\User;
 use App\response_trait\MyResponseTrait;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
@@ -23,20 +24,32 @@ class CommentController extends Controller
         ]);
 
         if ($validator->fails()) {
-            $messages = $validator->messages();
+            $messages = $validator->errors()->all();
             return $this->get_error_response(401, $messages);
         }
 
         $user = $request->user();
-        $ads = Ads::where("id", "=", $request->ads_id);
-        $adsUser = User::where("id" , $ads->user_id);
-        if ($ads == null) {
-            return $this->get_error_response(401, "this ad isn't avalible");
+        $ads = Ads::find($request->ads_id);
+
+        if (!$ads) {
+            return $this->get_error_response(401, "This ad isn't available");
         }
 
-        $commentRes = Comment::create(['comment' => $request->comment, 'user_id' => $user->id, "ads_id" => $request->ads_id]);
-        $commentRes->user = $user ;
-        return $this->get_response($commentRes, 200, "add like completed");
+        $comment = Comment::create([
+            'comment' => $request->comment,
+            'ads_id' => intval($request->ads_id),
+            'user_id' => $user->id,
+        ]);
+
+        $comment->user = $user;
+        $adsUser = User::where("id", $ads->user_id)->first();
+
+        if ($adsUser->id !== $user->id) {
+            $notificationService = new NotificationService();
+            $notificationService->sendCommentNotificationToOneUser($comment, $adsUser);
+        }
+
+        return $this->get_response($comment, 200, "Comment added successfully");
     }
     public function getAllComment(Request $request)
     {
@@ -48,7 +61,7 @@ class CommentController extends Controller
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
         }
-        $comment = Comment::where('ads_id' , $request->ads_id)->orderBy('created_at', 'desc')
+        $comment = Comment::where('ads_id', $request->ads_id)->orderBy('created_at', 'desc')
             ->paginate(Constant::NUM_OF_PAGE)
         ;
         foreach ($comment as $item) {

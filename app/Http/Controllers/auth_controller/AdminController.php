@@ -11,6 +11,7 @@ use App\Models\User;
 use App\response_trait\MyResponseTrait;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
@@ -62,6 +63,95 @@ class AdminController extends Controller
         }
         return $this->get_response($ads, 200, "completed");
     } 
+
+    public function blockUser(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|integer',
+            'block' => 'required|boolean',
+        ]);
+
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return $this->get_error_response(401, $messages);
+        }
+        $id = intval($request->user_id);
+        $user = User::where("id" , $id)->first();
+        if($user){
+            if($user->blocked && $request->block){
+                return $this->get_error_response(401, "already blocked");
+            }
+            else if(!$user->blocked && !$request->block){
+                return $this->get_error_response(401, "user is not blocked");
+            }
+            else {
+                $user->blocked = $request->block;
+                $user->save();
+            }
+            if($request->block){
+                $user->tokens()->delete();
+            }
+        }
+        else {
+            return $this->get_error_response(401, "user not found");
+        }
+        return $this->get_response([], 200, "block completed");
+    }
+    public function starAds(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ads_id' => 'required|integer',
+            'star' => 'required|boolean',
+        ]);
+
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return $this->get_error_response(401, $messages);
+        }
+        $id = intval($request->ads_id);
+        $ads = Ads::where("id" , $id)->first();
+        if($ads){
+            if($ads->stared && $request->star){
+                return $this->get_error_response(401, "already stared");
+            }
+            else if(!$ads->stared && !$request->star){
+                return $this->get_error_response(401, "ads is not stared");
+            }
+            else {
+                $ads->stared = $request->star;
+                $ads->save();
+            }
+        }
+        else {
+            return $this->get_error_response(401, "ads not found");
+        }
+        return $this->get_response([], 200, "stared completed");
+    }
+    public function updatePriority(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ads_id' => 'required|integer',
+            'priority' => 'required|integer',
+        ]);
+
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return $this->get_error_response(401, $messages);
+        }
+        $id = intval($request->ads_id);
+        $ads = Ads::where("id" , $id)->first();
+        if($ads){
+            $ads->priorty = $request->priority;
+            $ads->save();
+        }
+        else {
+            return $this->get_error_response(401, "ads not found");
+        }
+        return $this->get_response([], 200, "stared completed");
+    }
     public function deleteAdsForAdmin(Request $request)
     {
         $validator = Validator::make($request->all(), [

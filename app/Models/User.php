@@ -29,6 +29,7 @@ class User extends Authenticatable
         'location',
         'image',
         'rate',
+        'blocked',
         'type_of_account',
         'point',
         'fcm_token',

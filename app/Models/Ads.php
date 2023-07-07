@@ -18,6 +18,7 @@ class Ads extends Model
         'extra_description',
         'price',
         'type',
+        'stared',
         'status',
         'priorty',
         'link',

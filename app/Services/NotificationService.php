@@ -3,6 +3,7 @@
 namespace App\Services;
 use App\Models\constant\Constant;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class NotificationService 
 {
@@ -16,17 +17,18 @@ class NotificationService
             'extra' => $ads,
         ];
         $users = User::where('id', '!=', $user_id)->get();
-        $tokens = $users->pluck('fcm_token')->unique()->toArray();
+        $tokens = $users->filter(function ($user) {
+            return $user->fcm_token !== null;
+        })->pluck('fcm_token')->unique()->toArray();
         $data = [
             "registration_ids" => $tokens,
             "notification" => [
-                "title" => $ads->name,
+                "title" => $ads->user->name . " added new ads",
                 "body" => $ads->description,
                 "sound" => "default"
             ],
             'data' => $extraData,
         ];
-
         $dataString = json_encode($data);
 
         $headers = [
@@ -57,21 +59,20 @@ class NotificationService
         // Close cURL
         curl_close($ch);
     }
-    public function sendNotificationToOneUser($ads , $user_id)
+    public function sendCommentNotificationToOneUser($comment , $user)
     {
         $SERVER_API_KEY = Constant::SERVER_KEY; 
-        $ads_notification_type = Constant::ADS_NOTIFICATION_TYPE; 
+        $ads_notification_type = Constant::COMMENT_NOTIFICATION_TYPE; 
         $extraData = [
             'notificationType' => $ads_notification_type,
-            'extra' => $ads,
+            'extra' => $comment,
         ];
-        $users = User::where('id', '!=', $user_id)->get();
-        $tokens = $users->pluck('fcm_token')->unique()->toArray();
+        $tokens = [$user->fcm_token];
         $data = [
             "registration_ids" => $tokens,
             "notification" => [
-                "title" => $ads->name,
-                "body" => $ads->description,
+                "title" => $comment->user->name . " commented on your ads",
+                "body" => $comment->comment,
                 "sound" => "default"
             ],
             'data' => $extraData,

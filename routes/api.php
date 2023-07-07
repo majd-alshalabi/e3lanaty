@@ -69,4 +69,7 @@ Route::group(['middleware' => 'auth:sanctum' , "prefix" => "admin"], function ()
     Route::post('/acceptAds', [AdminController::class, 'acceptAds']);
     Route::post('/delete_ads_for_admin', [AdminController::class, 'deleteAdsForAdmin']);
     Route::post('/delete_comment_admin', [AdminController::class, 'deleteCommentForAdmin']);
+    Route::post('/block_user', [AdminController::class, 'blockUser']);
+    Route::post('/star_ads', [AdminController::class, 'starAds']);
+    Route::post('/update_priority', [AdminController::class, 'updatePriority']);
 });
