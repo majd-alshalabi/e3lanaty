@@ -60,7 +60,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/follow', [FollowController::class, 'addFollow']);
     Route::get('/get_follower_following_favorite_count', [FollowController::class, 'getFollowingAndFollowerAndFavorite']);
     Route::post('/add_feed_back', [FeedBackController::class, 'addFeedback']);
-    Route::post('/delete_feed_back', [FeedBackController::class, 'deleteFeedback']);
     Route::post('/update_notification_setting', [UserSettingController::class, 'updateNotificationType']);
     Route::post('/update_fcm_token', [UpdateFcmTokenController::class, 'updateFcmToken']);
 });
@@ -72,4 +71,6 @@ Route::group(['middleware' => 'auth:sanctum' , "prefix" => "admin"], function ()
     Route::post('/block_user', [AdminController::class, 'blockUser']);
     Route::post('/star_ads', [AdminController::class, 'starAds']);
     Route::post('/update_priority', [AdminController::class, 'updatePriority']);
+    Route::post('/delete_feed_back', [FeedBackController::class, 'deleteFeedback']);
+    Route::post('/send_feedback_answer', [AdminController::class, 'sendFeedbackAnswer']);
 });

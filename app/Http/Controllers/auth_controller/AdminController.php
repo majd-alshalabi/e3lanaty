@@ -11,6 +11,7 @@ use App\Models\User;
 use App\response_trait\MyResponseTrait;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -150,7 +151,7 @@ class AdminController extends Controller
         else {
             return $this->get_error_response(401, "ads not found");
         }
-        return $this->get_response([], 200, "stared completed");
+        return $this->get_response([], 200, "update priority completed");
     }
     public function deleteAdsForAdmin(Request $request)
     {
@@ -192,5 +193,32 @@ class AdminController extends Controller
             return $this->get_error_response(401, "no comment found");
         }
         return $this->get_response([], 200, "delete completed");
+    }
+     public function sendFeedbackAnswer(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|integer',
+            'title' => 'required|string',
+            'description' => 'required|string',
+        ]);
+
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return $this->get_error_response(401, $messages);
+        }
+        Log::info("asfdsf");
+        Log::info($request->user_id);
+        $user = User::where("id" , $request->user_id)->first();
+        Log::info($user);
+        if($user != null){
+            $current_time = Carbon::now();
+            $notificationService = new NotificationService();
+            $notificationService->sendFeedbackNotificationToOneUser(["title" => $request->title , "description" => $request->description , "created_at" => $current_time], $user,$request->description);
+        }
+        else {
+            return $this->get_error_response(401, "user not fount");
+        }
+        return $this->get_response([], 200, "send completed");
     }
 }
