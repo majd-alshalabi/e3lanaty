@@ -65,6 +65,16 @@ class AdsController extends Controller
                 $images[] = Image::create([
                     'path' => $item,
                     'ads_id' => $ads->id,
+                    'is_extra' => false,
+                ]);
+            }
+        }
+        if ($request->extra_images != null) {
+            foreach ($request->extra_images as $item) {
+                $images[] = Image::create([
+                    'path' => $item,
+                    'ads_id' => $ads->id,
+                    'is_extra' => true,
                 ]);
             }
         }

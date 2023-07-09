@@ -207,10 +207,7 @@ class AdminController extends Controller
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
         }
-        Log::info("asfdsf");
-        Log::info($request->user_id);
         $user = User::where("id" , $request->user_id)->first();
-        Log::info($user);
         if($user != null){
             $current_time = Carbon::now();
             $notificationService = new NotificationService();
