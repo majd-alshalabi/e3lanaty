@@ -4,6 +4,7 @@ use App\Http\Controllers\Ads\AdsController;
 use App\Http\Controllers\Ads\CommentController;
 use App\Http\Controllers\Ads\FavoriteController;
 use App\Http\Controllers\Ads\LikeController;
+use App\Http\Controllers\Ads\SearchController;
 use App\Http\Controllers\auth_controller\AdminController;
 use App\Http\Controllers\auth_controller\FeedBackController;
 use App\Http\Controllers\auth_controller\FollowController;
@@ -62,6 +63,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/add_feed_back', [FeedBackController::class, 'addFeedback']);
     Route::post('/update_notification_setting', [UserSettingController::class, 'updateNotificationType']);
     Route::post('/update_fcm_token', [UpdateFcmTokenController::class, 'updateFcmToken']);
+    Route::post('/search_for_ads', [SearchController::class, 'searchForAds']);
 });
 
 Route::group(['middleware' => 'auth:sanctum' , "prefix" => "admin"], function () {
