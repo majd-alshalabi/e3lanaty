@@ -18,18 +18,7 @@ class SearchController extends Controller
     use MyResponseTrait;
 
     public function searchForAds(Request $request)
-    {
-
-        $validator = Validator::make($request->all(), [
-            'search_word' => 'required|string',
-            'type' => 'required|integer',
-        ]);
-
-
-        if ($validator->fails()) {
-            $messages = $validator->messages();
-            return $this->get_error_response(401, $messages);
-        }
+    {  
         if ($request->search_word != null && $request->type != null) {
             $ads = Ads::where('name' ,'like' ,$request->search_word)->andWhere('type',$request->type)->orderBy('created_at', 'desc')->with('advantages')
                 ->with('images')
@@ -148,5 +137,7 @@ class SearchController extends Controller
 
             return $this->get_response($ads->items(), 200, "completed");
         }
+        return $this->get_error_response(401, "enter data to search for");
+
     }
 }
