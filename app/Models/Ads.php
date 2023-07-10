@@ -19,6 +19,7 @@ class Ads extends Model
         'price',
         'type',
         'stared',
+        'admin',
         'status',
         'priorty',
         'link',

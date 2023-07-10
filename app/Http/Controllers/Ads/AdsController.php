@@ -15,6 +15,7 @@ use App\Models\User;
 use App\response_trait\MyResponseTrait;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
@@ -35,10 +36,15 @@ class AdsController extends Controller
 
         if ($validator->fails()) {
             $messages = $validator->messages();
-            return $this->get_error_response(401, $messages);
+            return $this->get_error_response(401, $messages);   
         }
-
+        
         $user = $request->user();
+    
+        $isAdmin = false ;
+        if($user instanceof \App\Models\Admin){
+            $isAdmin = true ;
+        }
         $ads = Ads::create([
             'name' => $request->name,
             'description' => $request->description,
@@ -49,6 +55,7 @@ class AdsController extends Controller
             'status' => Constant::ADS_PENDDING_STATE,
             'priority' => 0,
             'user_id' => $user->id,
+            'admin' => $isAdmin,
         ]);
         $advantages = array();
         if ($request->advantages != null) {
