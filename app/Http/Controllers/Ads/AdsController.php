@@ -283,7 +283,7 @@ class AdsController extends Controller
 
     public function getAllAdsWithAcceptedState(Request $request)
     {
-        $ads = Ads::where('status' , Constant::ADS_ACCEPTED_STATE) ->orderBy('created_at', 'desc')->with('advantages')
+        $ads = Ads::where('admin' , false)->orderBy('priorty','desc')->where('status' , Constant::ADS_ACCEPTED_STATE) ->orderBy('created_at', 'desc')->with('advantages')
             ->with('images')
             ->paginate(Constant::NUM_OF_PAGE)
         ;
@@ -336,7 +336,7 @@ class AdsController extends Controller
             return $this->get_error_response(401, $messages);
         }
 
-        $ads = Ads::where('user_id' , $request->user_id)->orderBy('created_at', 'desc')->with('advantages')
+        $ads = Ads::where('user_id' , $request->user_id)->where('status' , Constant::ADS_ACCEPTED_STATE)->orderBy('created_at', 'desc')->with('advantages')
             ->with('images')->get()
         ;
         $currentUser = $request->user(); 

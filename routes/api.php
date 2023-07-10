@@ -64,6 +64,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/update_notification_setting', [UserSettingController::class, 'updateNotificationType']);
     Route::post('/update_fcm_token', [UpdateFcmTokenController::class, 'updateFcmToken']);
     Route::post('/search_for_ads', [SearchController::class, 'searchForAds']);
+    Route::get('/get_admin_or_star_ads', [AdminController::class, 'getAdminAndStaredAds']);
 });
 
 Route::group(['middleware' => 'auth:sanctum' , "prefix" => "admin"], function () {
