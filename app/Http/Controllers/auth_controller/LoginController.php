@@ -92,10 +92,12 @@ class LoginController extends Controller
     }
     public function deleteAccount(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = Auth::user();
 
-        if ($request->user('sanctum')) {
-            $request->user()->delete();
+        if ($user) {
+            $user->currentAccessToken()->delete();
+            $user->delete();
+
             return $this->get_response_with_only_message_and_status(200, "Account deleted successfully.");
         }
 
