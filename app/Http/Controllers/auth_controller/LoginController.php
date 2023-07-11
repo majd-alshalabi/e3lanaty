@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\auth_controller;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\UserSetting;
 use App\response_trait\MyResponseTrait;
 use Illuminate\Http\Request;
@@ -93,7 +94,7 @@ class LoginController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
         if ($request->user('sanctum')) {
-            $request->user()->delete();
+            User::where("id" , $request->user()->id)->delete();
             return $this->get_response_with_only_message_and_status(200, "logout completed");
         }
         return $this->get_response_with_only_message_and_status(400, "error while loging out");
