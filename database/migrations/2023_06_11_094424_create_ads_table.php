@@ -33,7 +33,7 @@ return new class extends Migration {
             $table->boolean('admin')->default(false);
             $table->integer('priorty')->default(0);
             $table->unsignedBigInteger('user_id')->nullable();
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
             $table->string('link');
             $table->timestamps();
         });
