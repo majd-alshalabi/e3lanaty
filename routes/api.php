@@ -38,6 +38,7 @@ Route::get('/storage/public/images/{filename}', [AdsController::class, 'getImage
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/logout', [LoginController::class, 'logout']);
+    Route::post('/delete_account', [LoginController::class, 'deleteAccount']);
     Route::post('/logout_admin', [LoginController::class, 'logoutAdmin']);
     Route::post('/add_ads', [AdsController::class, 'addAds']);
     Route::post('/upload_image', [AdsController::class, 'uploadImage']);

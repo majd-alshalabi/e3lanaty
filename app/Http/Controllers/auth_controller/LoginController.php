@@ -89,4 +89,14 @@ class LoginController extends Controller
         return $this->get_response_with_only_message_and_status(400, "error while loging out");
 
     }
+    public function deleteAccount(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        if ($request->user('sanctum')) {
+            $request->user()->delete();
+            return $this->get_response_with_only_message_and_status(200, "logout completed");
+        }
+        return $this->get_response_with_only_message_and_status(400, "error while loging out");
+
+    }
 }
