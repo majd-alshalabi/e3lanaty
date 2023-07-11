@@ -35,7 +35,7 @@ class LoginController extends Controller
         if (Auth::attempt($credentials)) {
             // he is a real user
             $user = $request->user();
-            if($user->blocked){
+            if ($user->blocked) {
                 return $this->get_error_response(400, "this user is blocked because of an acceptable action");
             }
             $userSetting = UserSetting::where('id', '=', $user->id)->first();
@@ -93,11 +93,12 @@ class LoginController extends Controller
     public function deleteAccount(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-        if ($request->user('sanctum')) {
-            User::where("id" , $request->user()->id)->delete();
-            return $this->get_response_with_only_message_and_status(200, "logout completed");
-        }
-        return $this->get_response_with_only_message_and_status(400, "error while loging out");
 
+        if ($request->user('sanctum')) {
+            $request->user()->delete();
+            return $this->get_response_with_only_message_and_status(200, "Account deleted successfully.");
+        }
+
+        return $this->get_response_with_only_message_and_status(400, "Error occurred while deleting the account.");
     }
 }
