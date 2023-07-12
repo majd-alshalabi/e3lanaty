@@ -80,4 +80,18 @@ class RegisterController extends Controller
         $token = $user->createToken('authToken');
         return $this->get_response_for_login($user, 200, "resgister completed",$token->plainTextToken);
     }
+    public function checkEmail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email|unique:users,email',
+        ]);
+
+
+        if($validator->fails()){
+            $messages = $validator->messages();
+            return $this->get_error_response(401,$messages);
+        }
+        
+        return $this->get_response([], 200, "completed");
+    }
 }
