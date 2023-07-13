@@ -36,14 +36,14 @@ class AdsController extends Controller
 
         if ($validator->fails()) {
             $messages = $validator->messages();
-            return $this->get_error_response(401, $messages);   
+            return $this->get_error_response(401, $messages);
         }
-        
+
         $user = $request->user();
-    
-        $isAdmin = false ;
-        if($user instanceof \App\Models\Admin){
-            $isAdmin = true ;
+
+        $isAdmin = false;
+        if ($user instanceof \App\Models\Admin) {
+            $isAdmin = true;
         }
         $ads = Ads::create([
             'name' => $request->name,
@@ -108,11 +108,10 @@ class AdsController extends Controller
             return $this->get_error_response(401, $messages);
         }
         $user = $request->user();
-        $ads = Ads::where([["id" , $request->ads_id],["user_id",$user->id]]);
-        if($ads != null){
+        $ads = Ads::where([["id", $request->ads_id], ["user_id", $user->id]]);
+        if ($ads != null) {
             $ads->delete();
-        }
-        else {
+        } else {
             return $this->get_error_response(401, "this ads is not your's you cant delete it");
         }
         return $this->get_response([], 200, "delete completed");
@@ -155,7 +154,7 @@ class AdsController extends Controller
             ->with('images')
             ->paginate(Constant::NUM_OF_PAGE)
         ;
-        $currentUser = $request->user(); 
+        $currentUser = $request->user();
         foreach ($ads as $item) {
             $like = Like::where('ads_id', '=', $item->id)->get();
             $isLike = Like::where([
@@ -193,17 +192,17 @@ class AdsController extends Controller
 
     public function getUserPendingAds(Request $request)
     {
-        
-        $currentUser = $request->user(); 
+
+        $currentUser = $request->user();
 
         $ads = Ads::where([
             ['status', '=', Constant::ADS_PENDDING_STATE],
             ['user_id', '=', $currentUser->id]
         ])
-        ->orderBy('created_at', 'desc')
-        ->with('advantages')
-        ->with('images')
-        ->get();
+            ->orderBy('created_at', 'desc')
+            ->with('advantages')
+            ->with('images')
+            ->get();
         foreach ($ads as $item) {
             $like = Like::where('ads_id', '=', $item->id)->get();
             $isLike = Like::where([
@@ -241,11 +240,11 @@ class AdsController extends Controller
 
     public function getAllAdsWithPenddingState(Request $request)
     {
-        $ads = Ads::where('status' , Constant::ADS_PENDDING_STATE)->orderBy('created_at', 'desc')->with('advantages')
+        $ads = Ads::where('status', Constant::ADS_PENDDING_STATE)->orderBy('created_at', 'desc')->with('advantages')
             ->with('images')
             ->paginate(Constant::NUM_OF_PAGE)
         ;
-        $currentUser = $request->user(); 
+        $currentUser = $request->user();
         foreach ($ads as $item) {
             $like = Like::where('ads_id', '=', $item->id)->get();
             $isLike = Like::where([
@@ -283,17 +282,19 @@ class AdsController extends Controller
 
     public function getAllAdsWithAcceptedState(Request $request)
     {
-        $ads = Ads::where('admin' , false)->orderBy('priorty','desc')->where('status' , Constant::ADS_ACCEPTED_STATE) ->orderBy('created_at', 'desc')->with('advantages')
+        $ads = Ads::where('admin', false)->orderBy('priorty', 'desc')->where('status', Constant::ADS_ACCEPTED_STATE)->orderBy('created_at', 'desc')->with('advantages')
             ->with('images')
             ->paginate(Constant::NUM_OF_PAGE)
         ;
-        $currentUser = $request->user(); 
+        $currentUser = auth('sanctum')->user();
         foreach ($ads as $item) {
             $like = Like::where('ads_id', '=', $item->id)->get();
-            $isLike = Like::where([
-                ['ads_id', '=', $item->id],
-                ['user_id', '=', $currentUser->id]
-            ])->count() > 0;
+            $isLike = false;
+            if ($currentUser != null)
+                $isLike = Like::where([
+                    ['ads_id', '=', $item->id],
+                    ['user_id', '=', $currentUser->id]
+                ])->count() > 0;
             $comment = Comment::where('ads_id', '=', $item->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
             $comment_count = Comment::where('ads_id', '=', $item->id)->count();
             $user = User::where('id', '=', $item->user_id)->get();
@@ -313,10 +314,12 @@ class AdsController extends Controller
             $item->comment = $commentRes;
             $item->isLike = $isLike;
             $item->comment_count = $comment_count;
-            $isInFavorite = Favorite::where([
-                ['ads_id', '=', $item->id],
-                ['user_id', '=', $currentUser->id]
-            ])->count() > 0;
+            $isInFavorite = false;
+            if ($currentUser != null)
+                $isInFavorite = Favorite::where([
+                    ['ads_id', '=', $item->id],
+                    ['user_id', '=', $currentUser->id]
+                ])->count() > 0;
             $item->isInFavorite = $isInFavorite;
         }
 
@@ -336,10 +339,10 @@ class AdsController extends Controller
             return $this->get_error_response(401, $messages);
         }
 
-        $ads = Ads::where('user_id' , $request->user_id)->where('status' , Constant::ADS_ACCEPTED_STATE)->orderBy('created_at', 'desc')->with('advantages')
+        $ads = Ads::where('user_id', $request->user_id)->where('status', Constant::ADS_ACCEPTED_STATE)->orderBy('created_at', 'desc')->with('advantages')
             ->with('images')->get()
         ;
-        $currentUser = $request->user(); 
+        $currentUser = $request->user();
         foreach ($ads as $item) {
             $like = Like::where('ads_id', '=', $item->id)->get();
             $isLike = Like::where([
@@ -375,7 +378,7 @@ class AdsController extends Controller
             ['follower_id', '=', $request->user()->id],
             ['followed_id', '=', $request->user_id]
         ])->count() > 0;
-        return $this->get_response(["ads" => $ads , "isFollowing" => $isFollowing], 200, "completed");
+        return $this->get_response(["ads" => $ads, "isFollowing" => $isFollowing], 200, "completed");
     }
 
     public function get_ads_by_id(Request $request)
@@ -389,18 +392,23 @@ class AdsController extends Controller
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
         }
-        $currentUser = $request->user(); 
+        $currentUser = auth('sanctum')->user();
 
         $ads = Ads::where('id', $request->ads_id)
             ->with('advantages')
             ->with('images')
             ->first();
+        if ($ads == null)
+            return $this->get_error_response(401, "ads is not available");
+
         $user = User::where('id', '=', $ads->user_id)->get();
         $like = Like::where('ads_id', '=', $ads->id)->get();
-        $isLike = Like::where([
-            ['ads_id', '=', $ads->id],
-            ['user_id', '=', $currentUser->id]
-        ])->count() > 0;
+        $isLike = false;
+        if ($currentUser != null)
+            $isLike = Like::where([
+                ['ads_id', '=', $ads->id],
+                ['user_id', '=', $currentUser->id]
+            ])->count() > 0;
         $comment = Comment::where('ads_id', '=', $ads->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
         $comment_count = Comment::where('ads_id', '=', $ads->id)->count();
 
@@ -414,10 +422,13 @@ class AdsController extends Controller
         $ads->isLike = $isLike;
         $ads->comment = $comment->items();
         $ads->comment_count = $comment_count;
-        $isInFavorite = Favorite::where([
-            ['ads_id', '=', $request->ads_id],
-            ['user_id', '=', $currentUser->id]
-        ])->count() > 0;
+        $isInFavorite = false;
+        if ($currentUser != null) {
+            $isInFavorite = Favorite::where([
+                ['ads_id', '=', $request->ads_id],
+                ['user_id', '=', $currentUser->id]
+            ])->count() > 0;
+        }
         $ads->isInFavorite = $isInFavorite;
 
         return $this->get_response($ads, 200, "completed");

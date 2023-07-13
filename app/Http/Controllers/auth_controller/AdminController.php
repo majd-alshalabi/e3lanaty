@@ -25,9 +25,11 @@ class AdminController extends Controller
             ->with('images')
             ->paginate(Constant::NUM_OF_PAGE)
         ;
-        $currentUser = $request->user(); 
+        $currentUser = auth('sanctum')->user();
         foreach ($ads as $item) {
             $like = Like::where('ads_id', '=', $item->id)->get();
+            $isLike = false ;
+            if($currentUser != null)
             $isLike = Like::where([
                 ['ads_id', '=', $item->id],
                 ['user_id', '=', $currentUser->id]
@@ -51,6 +53,8 @@ class AdminController extends Controller
             $item->comment = $commentRes;
             $item->isLike = $isLike;
             $item->comment_count = $comment_count;
+            $isInFavorite = false ;
+            if($currentUser != false)
             $isInFavorite = Favorite::where([
                 ['ads_id', '=', $item->id],
                 ['user_id', '=', $currentUser->id]
