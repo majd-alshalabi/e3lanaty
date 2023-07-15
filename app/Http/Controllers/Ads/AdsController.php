@@ -33,7 +33,10 @@ class AdsController extends Controller
             'link' => 'required|string',
         ]);
 
-
+        $sendNotification = false;
+        if($request->send_notification == true){
+            $sendNotification = true ;
+        }
         if ($validator->fails()) {
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
@@ -52,7 +55,7 @@ class AdsController extends Controller
             'price' => $request->price,
             'link' => $request->link,
             'extra_description' => $request->extra_description,
-            'status' => Constant::ADS_PENDDING_STATE,
+            'status' => $isAdmin ? Constant::ADS_ACCEPTED_STATE : Constant::ADS_PENDDING_STATE,
             'priority' => 0,
             'user_id' => $user->id,
             'admin' => $isAdmin,
@@ -92,7 +95,10 @@ class AdsController extends Controller
         $ads->comment_count = 0;
         $ads->comment = null;
         $ads->isInFavorite = false;
-
+        if($sendNotification){
+            $notificationService = new NotificationService();
+            $notificationService->sendNotification($ads, $ads->user_id);
+        }
         return $this->get_response([$ads], 200, "add completed");
     }
 
