@@ -10,6 +10,7 @@ use App\Models\Favorite;
 use App\Models\Like;
 use App\Models\User;
 use App\response_trait\MyResponseTrait;
+use App\Services\AdsService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -21,48 +22,17 @@ class AdminController extends Controller
     use MyResponseTrait;
     public function getAdminAndStaredAds(Request $request)
     {
-        $ads = Ads::where('stared' , true)->orWhere('admin' , true)->orderBy('created_at', 'desc')->with('advantages')
+        $ads = Ads::where('stared', true)
+            ->orWhere('admin', true)
+            ->orderBy('created_at', 'desc')
+            ->with('advantages')
             ->with('images')
             ->paginate(Constant::NUM_OF_PAGE)
-        ;
+            ;
         $currentUser = auth('sanctum')->user();
-        foreach ($ads as $item) {
-            $like = Like::where('ads_id', '=', $item->id)->get();
-            $isLike = false ;
-            if($currentUser != null)
-            $isLike = Like::where([
-                ['ads_id', '=', $item->id],
-                ['user_id', '=', $currentUser->id]
-            ])->count() > 0;
-            $comment = Comment::where('ads_id', '=', $item->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
-            $comment_count = Comment::where('ads_id', '=', $item->id)->count();
-            $user = User::where('id', '=', $item->user_id)->get();
-
-            if (count($user) == 0) {
-                $item->user = null;
-            } else {
-                $item->user = $user[0];
-            }
-            $item->like = count($like);
-            $commentRes = [];
-            foreach ($comment->items() as $item2) {
-                $commentUser = User::where('id', '=', $item2->user_id)->get();
-                $item2->user = $commentUser[0];
-                $commentRes[] = $item2;
-            }
-            $item->comment = $commentRes;
-            $item->isLike = $isLike;
-            $item->comment_count = $comment_count;
-            $isInFavorite = false ;
-            if($currentUser != false)
-            $isInFavorite = Favorite::where([
-                ['ads_id', '=', $item->id],
-                ['user_id', '=', $currentUser->id]
-            ])->count() > 0;
-            $item->isInFavorite = $isInFavorite;
-        }
-
-        return $this->get_response($ads->items(), 200, "completed");
+        $adsService = new AdsService();
+        $res = $adsService->getAdsData($ads, $currentUser);
+        return $this->get_response($res, 200, "completed");
     }
 
     public function getAllUser(Request $request)
@@ -82,7 +52,7 @@ class AdminController extends Controller
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
         }
-        $ads = Ads::where("id" , $request->ads_id)->first();
+        $ads = Ads::where("id", $request->ads_id)->first();
         $ads->status = Constant::ADS_ACCEPTED_STATE;
         $ads->save();
         try {
@@ -95,8 +65,8 @@ class AdminController extends Controller
             $like = Like::where('ads_id', '=', $ads->id)->get();
             $comment = Comment::where('ads_id', '=', $ads->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
             $comment_count = Comment::where('ads_id', '=', $ads->id)->count();
-    
-    
+
+
             if (count($user) == 0) {
                 $ads->user = null;
             } else {
@@ -109,7 +79,7 @@ class AdminController extends Controller
         } catch (e) {
         }
         return $this->get_response($ads, 200, "completed");
-    } 
+    }
 
     public function blockUser(Request $request)
     {
@@ -124,23 +94,20 @@ class AdminController extends Controller
             return $this->get_error_response(401, $messages);
         }
         $id = intval($request->user_id);
-        $user = User::where("id" , $id)->first();
-        if($user){
-            if($user->blocked && $request->block){
+        $user = User::where("id", $id)->first();
+        if ($user) {
+            if ($user->blocked && $request->block) {
                 return $this->get_error_response(401, "already blocked");
-            }
-            else if(!$user->blocked && !$request->block){
+            } else if (!$user->blocked && !$request->block) {
                 return $this->get_error_response(401, "user is not blocked");
-            }
-            else {
+            } else {
                 $user->blocked = $request->block;
                 $user->save();
             }
-            if($request->block){
+            if ($request->block) {
                 $user->tokens()->delete();
             }
-        }
-        else {
+        } else {
             return $this->get_error_response(401, "user not found");
         }
         return $this->get_response([], 200, "block completed");
@@ -158,20 +125,17 @@ class AdminController extends Controller
             return $this->get_error_response(401, $messages);
         }
         $id = intval($request->ads_id);
-        $ads = Ads::where("id" , $id)->first();
-        if($ads){
-            if($ads->stared && $request->star){
+        $ads = Ads::where("id", $id)->first();
+        if ($ads) {
+            if ($ads->stared && $request->star) {
                 return $this->get_error_response(401, "already stared");
-            }
-            else if(!$ads->stared && !$request->star){
+            } else if (!$ads->stared && !$request->star) {
                 return $this->get_error_response(401, "ads is not stared");
-            }
-            else {
+            } else {
                 $ads->stared = $request->star;
                 $ads->save();
             }
-        }
-        else {
+        } else {
             return $this->get_error_response(401, "ads not found");
         }
         return $this->get_response([], 200, "stared completed");
@@ -189,12 +153,11 @@ class AdminController extends Controller
             return $this->get_error_response(401, $messages);
         }
         $id = intval($request->ads_id);
-        $ads = Ads::where("id" , $id)->first();
-        if($ads){
+        $ads = Ads::where("id", $id)->first();
+        if ($ads) {
             $ads->priorty = $request->priority;
             $ads->save();
-        }
-        else {
+        } else {
             return $this->get_error_response(401, "ads not found");
         }
         return $this->get_response([], 200, "update priority completed");
@@ -210,11 +173,10 @@ class AdminController extends Controller
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
         }
-        $ads = Ads::where("id" , $request->ads_id);
-        if($ads != null){
+        $ads = Ads::where("id", $request->ads_id);
+        if ($ads != null) {
             $ads->delete();
-        }
-        else {
+        } else {
             return $this->get_error_response(401, "no ads found");
         }
         return $this->get_response([], 200, "delete completed");
@@ -231,16 +193,15 @@ class AdminController extends Controller
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
         }
-        $ads = Comment::where("id" , $request->comment_id);
-        if($ads != null){
+        $ads = Comment::where("id", $request->comment_id);
+        if ($ads != null) {
             $ads->delete();
-        }
-        else {
+        } else {
             return $this->get_error_response(401, "no comment found");
         }
         return $this->get_response([], 200, "delete completed");
     }
-     public function sendFeedbackAnswer(Request $request)
+    public function sendFeedbackAnswer(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|integer',
@@ -253,13 +214,12 @@ class AdminController extends Controller
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
         }
-        $user = User::where("id" , $request->user_id)->first();
-        if($user != null){
+        $user = User::where("id", $request->user_id)->first();
+        if ($user != null) {
             $current_time = Carbon::now();
             $notificationService = new NotificationService();
-            $notificationService->sendFeedbackNotificationToOneUser(["title" => $request->title , "description" => $request->description , "created_at" => $current_time], $user,$request->description);
-        }
-        else {
+            $notificationService->sendFeedbackNotificationToOneUser(["title" => $request->title, "description" => $request->description, "created_at" => $current_time], $user, $request->description);
+        } else {
             return $this->get_error_response(401, "user not fount");
         }
         return $this->get_response([], 200, "send completed");

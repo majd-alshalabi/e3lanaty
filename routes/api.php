@@ -51,7 +51,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/update_name', [UserSettingController::class, 'updateName']);
     Route::get('/get_all_user', [AdminController::class, 'getAllUser']);
     Route::post('/delete_ads', [AdsController::class, 'deleteAds']);
-    Route::get('/get_all_ads', [AdsController::class, 'getAllAds']);
     Route::get('/get_all_ads_with_pending_status', [AdsController::class, 'getAllAdsWithPenddingState']);
     Route::get('/get_user_pending_ads', [AdsController::class, 'getUserPendingAds']);
     Route::get('/get_all_ads', [AdsController::class, 'getAllAds']);

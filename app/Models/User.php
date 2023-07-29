@@ -31,6 +31,7 @@ class User extends Authenticatable
         'rate',
         'blocked',
         'type_of_account',
+        'admin',
         'point',
         'fcm_token',
     ];

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\auth_controller;
 
 use App\Http\Controllers\Controller;
-use App\Models\Admin;
 use App\Models\constant\Constant;
 use App\Models\User;
 use App\Models\UserSetting;
@@ -73,10 +72,11 @@ class RegisterController extends Controller
             $messages = $validator->messages();
             return $this->get_error_response(401,$messages);
         }
-        $user = Admin::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
+            'admin' => true,
         ]);
         $token = $user->createToken('authToken');
         return $this->get_response_for_login($user, 200, "resgister completed",$token->plainTextToken);

@@ -11,8 +11,6 @@ use App\Models\Like;
 use App\Models\User;
 use App\response_trait\MyResponseTrait;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
 
 class SearchController extends Controller
 {

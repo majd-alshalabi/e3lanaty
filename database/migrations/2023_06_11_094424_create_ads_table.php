@@ -24,8 +24,6 @@ return new class extends Migration {
         Schema::create('ads', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('description')->nullable();
-            $table->text('extra_description')->nullable();
             $table->double('price');
             $table->integer('type');
             $table->integer('status')->default(0);
