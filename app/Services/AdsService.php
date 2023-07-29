@@ -96,15 +96,15 @@ class AdsService
         foreach ($ads as $item) {
             // Get ad-specific data
             $item->description = $adsDescriptions->where('ads_id', $item->id);
-            $item->like = $likes->where('ads_id', $item->id)->count();
-            if($currentUser != null)
-                $item->isLike = $likes->where('ads_id', $item->id)->where('user_id', $currentUser->id)->isNotEmpty();
             $item->comment_count = $comments->where('ads_id', $item->id)->count();
-            if($currentUser != null)
+            $item->like = $likes->where('ads_id', $item->id)->count();
+            if($currentUser != null){
+                $item->isLike = $likes->where('ads_id', $item->id)->where('user_id', $currentUser->id)->isNotEmpty();
                 $item->isInFavorite = Favorite::where([
                     ['ads_id', '=', $item->id],
                     ['user_id', '=', $currentUser->id]
                 ])->exists();
+            }
             // Get user-specific data
             $user = $users->get($item->user_id);
             $item->user = $user ?? null;
