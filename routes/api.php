@@ -33,11 +33,16 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/register_admin', [RegisterController::class, 'registerAdmin']);
 Route::post('/check_email', [RegisterController::class, 'checkEmail']);
 Route::get('/storage/public/images/{filename}', [AdsController::class, 'getImage']);
-Route::get('/get_all_ads_with_accepted_status', [AdsController::class, 'getAllAdsWithAcceptedState']);
+Route::post('/get_all_ads_with_accepted_status', [AdsController::class, 'getAllAdsWithAcceptedState']);
 Route::post('/get_all_comment', [CommentController::class, 'getAllComment']);
 Route::post('/get_ads_by_id', [AdsController::class, 'get_ads_by_id']);
 Route::post('/search_for_ads', [SearchController::class, 'searchForAds']);
 Route::get('/get_admin_or_star_ads', [AdminController::class, 'getAdminAndStaredAds']);
+Route::post('/update_fcm_token', [UpdateFcmTokenController::class, 'updateFcmToken']);
+Route::post('/get_ads_by_user_id', [AdsController::class, 'getAdsByUserId']);
+Route::get('/get_all_ads', [AdsController::class, 'getAllAds']);
+
+
 
 
 
@@ -46,6 +51,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/delete_account', [LoginController::class, 'deleteAccount']);
     Route::post('/logout_admin', [LoginController::class, 'logoutAdmin']);
     Route::post('/add_ads', [AdsController::class, 'addAds']);
+    Route::post('/update_ads', [AdsController::class, 'updateAds']);
     Route::post('/upload_image', [AdsController::class, 'uploadImage']);
     Route::post('/update_profile_image', [UserSettingController::class, 'uploadImage']);
     Route::post('/update_name', [UserSettingController::class, 'updateName']);
@@ -53,8 +59,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/delete_ads', [AdsController::class, 'deleteAds']);
     Route::get('/get_all_ads_with_pending_status', [AdsController::class, 'getAllAdsWithPenddingState']);
     Route::get('/get_user_pending_ads', [AdsController::class, 'getUserPendingAds']);
-    Route::get('/get_all_ads', [AdsController::class, 'getAllAds']);
-    Route::post('/get_ads_by_user_id', [AdsController::class, 'getAdsByUserId']);
     Route::get('/get_all_favorite', [FavoriteController::class, 'getAllFavorite']);
     Route::get('/get_all_feedback', [FeedBackController::class, 'getAllFeedback']);
     Route::post('/like', [LikeController::class, 'addLike']);
@@ -62,9 +66,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/comment', [CommentController::class, 'addComment']);
     Route::post('/follow', [FollowController::class, 'addFollow']);
     Route::get('/get_follower_following_favorite_count', [FollowController::class, 'getFollowingAndFollowerAndFavorite']);
+    Route::post('/get_following_or_follower', [FollowController::class, 'getFollowerOrFollowing']);
     Route::post('/add_feed_back', [FeedBackController::class, 'addFeedback']);
     Route::post('/update_notification_setting', [UserSettingController::class, 'updateNotificationType']);
-    Route::post('/update_fcm_token', [UpdateFcmTokenController::class, 'updateFcmToken']);
 });
 
 Route::group(['middleware' => 'auth:sanctum' , "prefix" => "admin"], function () {
@@ -76,4 +80,5 @@ Route::group(['middleware' => 'auth:sanctum' , "prefix" => "admin"], function ()
     Route::post('/update_priority', [AdminController::class, 'updatePriority']);
     Route::post('/delete_feed_back', [FeedBackController::class, 'deleteFeedback']);
     Route::post('/send_feedback_answer', [AdminController::class, 'sendFeedbackAnswer']);
+    Route::post('/update_admin_profile', [UserSettingController::class, 'updateAdminProfileData']);
 });

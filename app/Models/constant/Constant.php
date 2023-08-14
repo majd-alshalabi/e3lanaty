@@ -6,6 +6,14 @@ namespace App\Models\constant;
 class Constant 
 {
 
+
+    /// ads states 
+    public const NORMAL_ADS_TYPE = 0;
+    public const SERVICE_ADS_TYPE = 1;
+    public const POST_ADS_TYPE = 2;
+
+    
+
     /// ads states 
     public const ADS_ACCEPTED_STATE = 1;
 

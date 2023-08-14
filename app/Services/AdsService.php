@@ -74,7 +74,7 @@ class AdsService
 
         // Check for errors
         if ($response === false) {
-            // $error = curl_error($ch);
+            curl_error($ch);
         }
         // Close cURL
         curl_close($ch);
@@ -86,7 +86,7 @@ class AdsService
         $resultList = array();
         // Eager load related data for all ads at once
         $adsIds = $ads->pluck('id');
-        $adsDescriptions = AdsDescription::whereIn('ads_id', $adsIds)->get();
+        
         $likes = Like::whereIn('ads_id', $adsIds)->get();
         $comments = Comment::whereIn('ads_id', $adsIds)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
 
@@ -95,10 +95,10 @@ class AdsService
         $users = User::whereIn('id', $userIds)->get()->keyBy('id');
         foreach ($ads as $item) {
             // Get ad-specific data
-            $item->description = $adsDescriptions->where('ads_id', $item->id);
+            $item->description = AdsDescription::where('ads_id', $item->id)->get();
             $item->comment_count = $comments->where('ads_id', $item->id)->count();
             $item->like = $likes->where('ads_id', $item->id)->count();
-            if($currentUser != null){
+            if ($currentUser != null) {
                 $item->isLike = $likes->where('ads_id', $item->id)->where('user_id', $currentUser->id)->isNotEmpty();
                 $item->isInFavorite = Favorite::where([
                     ['ads_id', '=', $item->id],
@@ -110,7 +110,7 @@ class AdsService
             $item->user = $user ?? null;
 
             $resultList[] = $item;
-           
+
         }
 
         return $resultList;

@@ -15,6 +15,7 @@ class Ads extends Model
     protected $fillable = [
         'name',
         'description',
+        'ads_type',
         'extra_description',
         'price',
         'type',
@@ -44,6 +45,11 @@ class Ads extends Model
     public function images(): HasMany
     {
         return $this->hasMany(Image::class);
+    }
+
+    public function adsDescriptions(): HasMany
+    {
+        return $this->hasMany(AdsDescription::class);
     }
 
     public function advantages(): HasMany

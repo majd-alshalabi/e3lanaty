@@ -9,6 +9,7 @@ use App\Models\constant\Constant;
 use App\Models\Favorite;
 use App\Models\Like;
 use App\Models\User;
+use App\Models\UserSetting;
 use App\response_trait\MyResponseTrait;
 use App\Services\AdsService;
 use App\Services\NotificationService;
@@ -22,13 +23,18 @@ class AdminController extends Controller
     use MyResponseTrait;
     public function getAdminAndStaredAds(Request $request)
     {
-        $ads = Ads::where('stared', true)
-            ->orWhere('admin', true)
+        $type = Constant::NORMAL_ADS_TYPE;
+
+        $ads = Ads::where(function ($query) {
+                $query->where('stared', true)
+                    ->orWhere('admin', true);
+            })
+            ->where('ads_type', $type)
+            ->orderBy('priorty', 'desc')
             ->orderBy('created_at', 'desc')
             ->with('advantages')
             ->with('images')
-            ->paginate(Constant::NUM_OF_PAGE)
-            ;
+            ->paginate(Constant::NUM_OF_PAGE);
         $currentUser = auth('sanctum')->user();
         $adsService = new AdsService();
         $res = $adsService->getAdsData($ads, $currentUser);
@@ -103,9 +109,6 @@ class AdminController extends Controller
             } else {
                 $user->blocked = $request->block;
                 $user->save();
-            }
-            if ($request->block) {
-                $user->tokens()->delete();
             }
         } else {
             return $this->get_error_response(401, "user not found");
@@ -215,6 +218,8 @@ class AdminController extends Controller
             return $this->get_error_response(401, $messages);
         }
         $user = User::where("id", $request->user_id)->first();
+        $userSetting = UserSetting::where("user_id", $request->user_id)->first();
+        $user->fcm_token = $userSetting->fcm_token;
         if ($user != null) {
             $current_time = Carbon::now();
             $notificationService = new NotificationService();
@@ -222,6 +227,6 @@ class AdminController extends Controller
         } else {
             return $this->get_error_response(401, "user not fount");
         }
-        return $this->get_response([], 200, "send completed");
+        return $this->get_response([$user], 200, "send completed");
     }
 }

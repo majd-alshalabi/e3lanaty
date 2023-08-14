@@ -8,6 +8,7 @@ use App\Models\Comment;
 use App\Models\constant\Constant;
 use App\Models\Favorite;
 use App\Models\Like;
+use App\Models\Posts;
 use App\response_trait\MyResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;

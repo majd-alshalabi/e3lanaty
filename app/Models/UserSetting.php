@@ -13,6 +13,7 @@ class UserSetting extends Model
     protected $fillable = [
         'user_id',
         'notification_type',
+        'fcm_token',
     ];
     public function users(): BelongsTo
     {

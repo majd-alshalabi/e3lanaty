@@ -23,16 +23,18 @@ return new class extends Migration {
     {
         Schema::create('ads', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->double('price');
-            $table->integer('type');
+            $table->text('name');
+            $table->text('price')->nullable();
+            $table->integer('type')->nullable();
+            $table->integer('ads_type');
             $table->integer('status')->default(0);
             $table->boolean('stared')->default(false);
             $table->boolean('admin')->default(false);
+            $table->boolean('service')->default(false);
             $table->integer('priorty')->default(0);
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
-            $table->string('link');
+            $table->string('link')->nullable();
             $table->timestamps();
         });
     }

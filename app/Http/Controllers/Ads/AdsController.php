@@ -14,6 +14,7 @@ use App\Models\Image;
 use App\Models\Like;
 use App\Models\User;
 use App\response_trait\MyResponseTrait;
+use App\Services\AddAdsService;
 use App\Services\AdsService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
@@ -28,48 +29,88 @@ class AdsController extends Controller
     public function addAds(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string',
-            'type' => 'required|integer',
+            'ads_type' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
         }
-
+        // return [$request->ads_type];
+        if ($request->ads_type == Constant::POST_ADS_TYPE) {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string',
+            ]);
+            if ($validator->fails()) {
+                $messages = $validator->messages();
+                return $this->get_error_response(401, $messages);
+            }
+        } else {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string',
+                'type' => 'required|integer',
+            ]);
+            if ($validator->fails()) {
+                $messages = $validator->messages();
+                return $this->get_error_response(401, $messages);
+            }
+        }
         $sendNotification = false;
         if ($request->send_notification == true) {
             $sendNotification = true;
         }
 
-        $user = $request->user();
-
-        $isAdmin = false;
-        if ($user->admin) {
-            $isAdmin = true;
+        $service = new AddAdsService();
+        if ($request->user()->blocked) {
+            return $this->get_error_response(401, "user is blocked");
         }
-        $ads = Ads::create([
-            'name' => $request->name,
-            'type' => $request->type,
-            'price' => $request->price,
-            'link' => $request->link,
-            'status' => $isAdmin ? Constant::ADS_ACCEPTED_STATE : Constant::ADS_PENDDING_STATE,
-            'priority' => 0,
-            'user_id' => $user->id,
-            'admin' => $isAdmin,
+        $res = null;
+        $res = ($request->ads_type == Constant::POST_ADS_TYPE)
+            ? $service->addPost($request, $sendNotification)
+            : $service->addAds($request, $sendNotification)
+        ;
+
+        return $this->get_response([$res], 200, "add completed");
+    }
+    public function updateAds(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer',
         ]);
+
+        if ($validator->fails()) {
+            return $this->get_error_response(401, $validator->messages());
+        }
+
+        $ads = Ads::find($request->id);
+
+        if ($ads == null) {
+            return $this->get_error_response(401, "Can't find ads, please try again later");
+        }
+
+        $ads->name = $request->input('name');
+        $ads->price = $request->input('price');
+        $ads->link = $request->input('link');
+        $ads->type = $request->input('type');
+
+        $ads->save();
+
+        Advantage::where("ads_id", $request->id)->delete();
         $advantages = array();
-        if ($request->advantages != null) {
-            foreach ($request->advantages as $item) {
+        if ($request->has('advantages') && is_array($request->input('advantages'))) {
+            foreach ($request->input('advantages') as $item) {
                 $advantages[] = Advantage::create([
                     'advantage' => $item,
                     'ads_id' => $ads->id,
                 ]);
             }
         }
+        $ads->advantages = $advantages;
+
+        AdsDescription::where("ads_id", $request->id)->delete();
         $description = array();
-        if ($request->description != null) {
-            foreach ($request->description as $item) {
+        if ($request->has('description') && is_array($request->input('description'))) {
+            foreach ($request->input('description') as $item) {
                 $description[] = AdsDescription::create([
                     'image' => $item['image'],
                     'ads_id' => $ads->id,
@@ -78,9 +119,12 @@ class AdsController extends Controller
                 ]);
             }
         }
+        $ads->description = $description;
+
+        Image::where("ads_id", $request->id)->delete();
         $images = array();
-        if ($request->images != null) {
-            foreach ($request->images as $item) {
+        if ($request->has('images') && is_array($request->input('images'))) {
+            foreach ($request->input('images') as $item) {
                 $images[] = Image::create([
                     'path' => $item,
                     'ads_id' => $ads->id,
@@ -88,21 +132,11 @@ class AdsController extends Controller
                 ]);
             }
         }
-        $ads->user = $user;
-        $ads->description = $description;
-        $ads->advantages = $advantages;
         $ads->images = $images;
-        $ads->like = 0;
-        $ads->comment_count = 0;
-        $ads->comment = null;
-        $ads->isInFavorite = false;
-        if ($sendNotification) {
-            $notificationService = new NotificationService();
-            $notificationService->sendNotification($ads, $ads->user_id);
-        }
-        return $this->get_response([$ads], 200, "add completed");
-    }
+        $ads->user = $request->user();
 
+        return $this->get_response([$ads], 200, "Update completed");
+    }
     public function deleteAds(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -195,21 +229,36 @@ class AdsController extends Controller
         ;
         $currentUser = auth('sanctum')->user();
         $adsService = new AdsService();
-        $res = $adsService->getAdsData($ads,$currentUser);
+        $res = $adsService->getAdsData($ads, $currentUser);
 
         return $this->get_response($res, 200, "completed");
     }
 
     public function getAllAdsWithAcceptedState(Request $request)
     {
-        $ads = Ads::where('admin', false)->orderBy('priorty', 'desc')->where('status', Constant::ADS_ACCEPTED_STATE)->orderBy('created_at', 'desc')->with('advantages')
-            ->with('images')
-            ->paginate(Constant::NUM_OF_PAGE)
-        ;
+        $ads = null;
+        if ($request->ads_type != Constant::SERVICE_ADS_TYPE || $request->ads_type == Constant::POST_ADS_TYPE) {
+            $ads = Ads::where('admin', false)
+                ->where('ads_type', "=", $request->ads_type)
+                ->orderBy('priorty', 'desc')
+                ->where('status', Constant::ADS_ACCEPTED_STATE)
+                ->orderBy('created_at', 'desc')->with('advantages')
+                ->with('images')
+                ->paginate(Constant::NUM_OF_PAGE)
+            ;
+        } else {
+            $ads = Ads::where('ads_type', "=", $request->ads_type)
+                ->orderBy('priorty', 'desc')
+                ->where('status', Constant::ADS_ACCEPTED_STATE)
+                ->orderBy('created_at', 'desc')->with('advantages')
+                ->with('images')
+                ->paginate(Constant::NUM_OF_PAGE)
+            ;
+        }
         $currentUser = auth('sanctum')->user();
         $adsService = new AdsService();
         $res = $adsService->getAdsData($ads, $currentUser);
-        
+
         return $this->get_response($res, 200, "completed");
     }
 
@@ -229,43 +278,17 @@ class AdsController extends Controller
         $ads = Ads::where('user_id', $request->user_id)->where('status', Constant::ADS_ACCEPTED_STATE)->orderBy('created_at', 'desc')->with('advantages')
             ->with('images')->get()
         ;
-        $currentUser = auth('sanctum')->user();
-        foreach ($ads as $item) {
-            $like = Like::where('ads_id', '=', $item->id)->get();
-            $isLike = Like::where([
-                ['ads_id', '=', $item->id],
-                ['user_id', '=', $currentUser->id]
-            ])->count() > 0;
-            $comment = Comment::where('ads_id', '=', $item->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
-            $comment_count = Comment::where('ads_id', '=', $item->id)->count();
-            $user = User::where('id', '=', $item->user_id)->get();
 
-            if (count($user) == 0) {
-                $item->user = null;
-            } else {
-                $item->user = $user[0];
-            }
-            $item->like = count($like);
-            $commentRes = [];
-            foreach ($comment->items() as $item2) {
-                $commentUser = User::where('id', '=', $item2->user_id)->get();
-                $item2->user = $commentUser[0];
-                $commentRes[] = $item2;
-            }
-            $item->comment = $commentRes;
-            $item->isLike = $isLike;
-            $item->comment_count = $comment_count;
-            $isInFavorite = Favorite::where([
-                ['ads_id', '=', $item->id],
-                ['user_id', '=', $currentUser->id]
+        $currentUser = auth('sanctum')->user();
+        $adsService = new AdsService();
+        $res = $adsService->getAdsData($ads, $currentUser);
+        $isFollowing = false;
+        if ($currentUser != null)
+            $isFollowing = Follow::where([
+                ['follower_id', '=', $currentUser->id],
+                ['followed_id', '=', $request->user_id]
             ])->count() > 0;
-            $item->isInFavorite = $isInFavorite;
-        }
-        $isFollowing = Follow::where([
-            ['follower_id', '=', $request->user()->id],
-            ['followed_id', '=', $request->user_id]
-        ])->count() > 0;
-        return $this->get_response(["ads" => $ads, "isFollowing" => $isFollowing], 200, "completed");
+        return $this->get_response(["ads" => $res, "isFollowing" => $isFollowing], 200, "completed");
     }
 
     public function get_ads_by_id(Request $request)
@@ -290,6 +313,7 @@ class AdsController extends Controller
 
         $user = User::where('id', '=', $ads->user_id)->get();
         $like = Like::where('ads_id', '=', $ads->id)->get();
+        $description = AdsDescription::where('ads_id', '=', $ads->id)->get();
         $isLike = false;
         if ($currentUser != null)
             $isLike = Like::where([
@@ -307,6 +331,7 @@ class AdsController extends Controller
         }
         $ads->like = count($like);
         $ads->isLike = $isLike;
+        $ads->description = $description;
         $ads->comment = $comment->items();
         $ads->comment_count = $comment_count;
         $isInFavorite = false;

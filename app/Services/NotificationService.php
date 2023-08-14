@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Models\constant\Constant;
 use App\Models\Follow;
 use App\Models\User;
+use App\Models\UserSetting;
 use Illuminate\Support\Facades\Log;
 
 class NotificationService 
@@ -17,20 +18,17 @@ class NotificationService
             'notificationType' => $ads_notification_type,
             'extra' => $ads,
         ];
-        $users = User::where('id', '!=', $user_id)->with("userSetting")->get();
-        Log::info($users);
+        $users = UserSetting::where('user_id', '!=', $user_id)->get();
         $tokens = $users->filter(function ($user)  use ($user_id) {
             if($user->fcm_token == null){
                 return false;
             }
-            if($user->userSetting == null){
-                return true;
-            }
-            if($user->userSetting->notification_type == Constant::ALL_USER_NOTIFICATION_TYPE)
+            if($user->notification_type == Constant::ALL_USER_NOTIFICATION_TYPE)
             {
                 return true ;
             }
-            else if ($user->userSetting->notification_type == Constant::FOLLOWER_NOTIFICATION_TYPE) {
+            else if ($user->notification_type == Constant::FOLLOWER_NOTIFICATION_TYPE) {
+                if($user->user_id == null)return false ;
                 $followRes = Follow::where("follower_id", "=", $user->id)->where("followed_id", "=", $user_id)->first();
                 return $followRes != null;
             }
@@ -40,7 +38,7 @@ class NotificationService
             "registration_ids" => $tokens,
             "notification" => [
                 "title" => $ads->user->name . " added new ads",
-                "body" => $ads->description,
+                "body" => 'ads with title ' . $ads->name . ' where added',
                 "sound" => "default"
             ],
             'data' => $extraData,
@@ -124,7 +122,7 @@ class NotificationService
         // Close cURL
         curl_close($ch);
     }
-    public function sendFeedbackNotificationToOneUser($feedback , $user,$description)
+    public function sendFeedbackNotificationToOneUser($feedback,$user,$description)
     {
         $SERVER_API_KEY = Constant::SERVER_KEY; 
         $ads_notification_type = Constant::FEED_BACK_NOTIFICATION_TYPE; 
@@ -168,7 +166,7 @@ class NotificationService
 
         // Check for errors
         if ($response === false) {
-            // $error = curl_error($ch);
+            curl_error($ch);
         }
         // Close cURL
         curl_close($ch);

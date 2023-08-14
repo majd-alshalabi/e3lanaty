@@ -35,14 +35,11 @@ class LoginController extends Controller
         if (Auth::attempt($credentials)) {
             // he is a real user
             $user = $request->user();
-            if ($user->blocked) {
-                return $this->get_error_response(400, "this user is blocked because of an acceptable action");
+            if($user->deleted){
+                return $this->get_error_response(401, "this account is deleted try registering with this account");   
             }
-            $userSetting = UserSetting::where('id', '=', $user->id)->first();
-            $user->user_setting = $userSetting;
-
             $token = $user->createToken('authToken');
-
+            UserSetting::where('fcm_token' , $request->fcm_token)->update(['user_id' => $user->id]);
             return $this->get_response_for_login($user, 200, "login completed", $token->plainTextToken);
         }
         return $this->get_error_response(401, "enter valid email and password");
@@ -75,8 +72,6 @@ class LoginController extends Controller
             else if (!$user->admin) {
                 return $this->get_error_response(400, "un registered email");
             }
-            $userSetting = UserSetting::where('id', '=', $user->id)->first();
-            $user->user_setting = $userSetting;
 
             $token = $user->createToken('authToken');
 
@@ -108,7 +103,8 @@ class LoginController extends Controller
 
         if ($user) {
             $user->currentAccessToken()->delete();
-            $user->delete();
+            $user->deleted = true ;
+            $user->save();
 
             return $this->get_response_with_only_message_and_status(200, "Account deleted successfully.");
         }

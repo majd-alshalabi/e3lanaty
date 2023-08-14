@@ -37,7 +37,7 @@ Trait MyResponseTrait
     public function get_error_response($status,$msg)
     {
         $arr = [
-            'status'=>$status,
+            'status'=>400,
             'message'=>$msg
         ];
         return response($arr,400);

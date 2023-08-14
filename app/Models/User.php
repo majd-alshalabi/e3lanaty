@@ -25,6 +25,7 @@ class User extends Authenticatable
         'email',
         'password',
         'phone_number',
+        'deleted',
         'about_me',
         'location',
         'image',
@@ -33,7 +34,6 @@ class User extends Authenticatable
         'type_of_account',
         'admin',
         'point',
-        'fcm_token',
     ];
 
     /**

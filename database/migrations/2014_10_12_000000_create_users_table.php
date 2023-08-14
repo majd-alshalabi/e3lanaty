@@ -18,10 +18,10 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->string('about_me')->nullable();
             $table->string('image')->nullable();
-            $table->string('fcm_token')->nullable();
             $table->integer('rate')->nullable();
             $table->boolean('blocked')->default(false);
             $table->boolean('admin')->default(false);
+            $table->boolean('deleted')->default(false);
             $table->integer('type_of_account')->default(0);
             $table->integer('point')->default(0);
             $table->string('email')->unique();

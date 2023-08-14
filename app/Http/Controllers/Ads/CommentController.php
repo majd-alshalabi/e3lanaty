@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ads;
 use App\Models\Comment;
 use App\Models\constant\Constant;
+use App\Models\Posts;
 use App\Models\User;
 use App\response_trait\MyResponseTrait;
 use App\Services\NotificationService;
@@ -29,6 +30,10 @@ class CommentController extends Controller
         }
 
         $user = $request->user();
+        if($user->blocked){
+            return $this->get_error_response(401, "user is blocked");
+        }
+        
         $ads = Ads::find($request->ads_id);
 
         if (!$ads) {

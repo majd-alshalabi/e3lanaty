@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\UserSetting;
 use App\response_trait\MyResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class UserSettingController extends Controller
@@ -16,6 +17,7 @@ class UserSettingController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'notification_type' => 'required|integer',
+            'fcm_token' => 'required|string'
         ]);
 
 
@@ -24,18 +26,21 @@ class UserSettingController extends Controller
             return $this->get_error_response(401, $messages);
         }
 
-        $user = $request->user();
-        $res = UserSetting::where('user_id', $user->id)
+        $res = UserSetting::where('fcm_token', $request->fcm_token)
             ->update([
                 'notification_type' => $request->notification_type,
             ]);
         if($res != 0){
-            $user_setting = UserSetting::where('user_id', $user->id)->first();
+            $user_setting = UserSetting::where('fcm_token', $request->fcm_token)->first();
             return $this->get_response($user_setting, 200, "update setting completed completed");
         }
         else 
         {
-            return $this->get_error_response(401, 'you have not setting to update!');
+            $user_setting = UserSetting::create([
+                'fcm_token' => $request->fcm_token,
+                'notification_type' => $request->notification_type,
+            ]);
+            return $this->get_response($user_setting, 200, "update setting completed completed");
         }
     }
     public function uploadImage(Request $request)
@@ -69,6 +74,19 @@ class UserSettingController extends Controller
         }
         $user = $request->user();
         $user->name = $request->name ;
+        $user->update();
+        
+        return $this->get_response($user, 200, "update completed");
+    }
+    public function updateAdminProfileData(Request $request)
+    {
+        $user = $request->user();
+        if($request->name != null)
+            $user->name = $request->name;
+        if($request->email != null)
+            $user->email = $request->email;
+        if($request->password != null)
+            $user->password = Hash::make($request->password);
         $user->update();
         
         return $this->get_response($user, 200, "update completed");

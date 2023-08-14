@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\auth_controller;
 
 use App\Http\Controllers\Controller;
+use App\Models\Ads;
 use App\Models\Favorite;
 use App\Models\Follow;
 use App\Models\User;
@@ -62,12 +63,33 @@ class FollowController extends Controller
     {
         $user = $request->user();
 
-        $favoritCount = Favorite::where('user_id', $user->id)->count();
+        $favoritCount = Ads::where('user_id', $user->id)->count();
         $folowerCount = Follow::where('followed_id', $user->id)->count();
         $folowingCount = Follow::where('follower_id', $user->id)->count();
 
         return $this->get_response(["user" => $user,"favorite_count" => $favoritCount, "follower_count" => $folowerCount, "following_count" => $folowingCount], 200, "completed");
     }
 
+    public function getFollowerOrFollowing(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'follower' => 'required|boolean'
+        ]);
+
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return $this->get_error_response(401, $messages);
+        }
+
+        $user = $request->user();
+        $res = null ;
+        if($request->follower)
+        $res = $folower = Follow::where('followed_id', $user->id)->with("follower")->get();
+        else 
+        $res = $folowing = Follow::where('follower_id', $user->id)->with("following")->get();
+
+        return $this->get_response($res, 200, "completed");
+    }
 
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Ads;
 use App\Http\Controllers\Controller;
 use App\Models\Ads;
 use App\Models\Like;
+use App\Models\Posts;
 use App\response_trait\MyResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
