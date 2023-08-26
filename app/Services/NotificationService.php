@@ -36,11 +36,7 @@ class NotificationService
         })->pluck('fcm_token')->unique()->toArray();
         $data = [
             "registration_ids" => $tokens,
-            "notification" => [
-                "title" => $ads->user->name . " added new ads",
-                "body" => 'ads with title ' . $ads->name . ' where added',
-                "sound" => "default"
-            ],
+            "priority" => "high",
             'data' => $extraData,
         ];
         $dataString = json_encode($data);
@@ -84,11 +80,6 @@ class NotificationService
         $tokens = [$user->fcm_token];
         $data = [
             "registration_ids" => $tokens,
-            "notification" => [
-                "title" => $comment->user->name . " commented on your ads",
-                "body" => $comment->comment,
-                "sound" => "default"
-            ],
             'data' => $extraData,
         ];
 
@@ -133,11 +124,6 @@ class NotificationService
         $tokens = [$user->fcm_token];
         $data = [
             "registration_ids" => $tokens,
-            "notification" => [
-                "title" => "admin answer your feedback",
-                "body" => $description ,
-                "sound" => "default"
-            ],
             'data' => $extraData,
         ];
 

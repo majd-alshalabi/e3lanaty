@@ -38,7 +38,14 @@ class UpdateFcmTokenController extends Controller
                 if ($res != 0) {
                     DB::commit();
                     return $this->get_response($request->token, 200, "update setting completed");
-                } 
+                } else {
+                    UserSetting::create([
+                        'fcm_token' => $request->token,
+                        'user_id' => $currentUser != null ? $currentUser->id : null,
+                    ]);
+                    DB::commit();
+                    return $this->get_response($request->token, 200, "update setting completed");
+                }
             } else {
                 $res = UserSetting::where('fcm_token', $request->token)
                     ->update([

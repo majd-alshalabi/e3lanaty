@@ -34,6 +34,7 @@ class User extends Authenticatable
         'type_of_account',
         'admin',
         'point',
+        'deleted',
     ];
 
     /**

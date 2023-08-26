@@ -100,7 +100,7 @@ class RegisterController extends Controller
     public function checkEmail(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email|unique:users,email',
+            'email' => 'required|string|email',
         ]);
 
 
@@ -109,6 +109,17 @@ class RegisterController extends Controller
             return $this->get_error_response(401, $messages);
         }
 
+        $user = User::where("email" , $request->email)->first();
+        $res = false ;
+        if($user == null){
+
+            $res = true ;
+        }else if($user->deleted){
+            $res = true ;
+        }
+        if($res == false){
+            return $this->get_error_response(401, "this user is already registered in the application try login");
+        }
         return $this->get_response([], 200, "completed");
     }
 }
