@@ -14,9 +14,12 @@ return new class extends Migration
         Schema::create('feed_backs', function (Blueprint $table) {
             $table->id();
             $table->text('feed_back');
+            $table->text('read_status')->default(false);
             $table->string('title');
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->unsignedBigInteger('sender_id')->nullable();
+            $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
+            $table->unsignedBigInteger('receiver_id')->nullable();
+            $table->foreign('receiver_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

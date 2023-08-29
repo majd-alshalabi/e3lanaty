@@ -56,6 +56,13 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+
+    public static function search($query)
+    {
+        return self::where('name', 'LIKE', "%$query%")
+            ->get();
+    }
+
     public function ads(): HasMany
     {
         return $this->hasMany(Ads::class);

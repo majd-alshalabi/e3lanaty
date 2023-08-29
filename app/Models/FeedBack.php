@@ -13,11 +13,18 @@ class FeedBack extends Model
     protected $fillable = [
         'feed_back',
         'title',
-        'user_id',
+        'sender_id',
+        'receiver_id',
+        'read_status',
     ];
 
-    public function users(): BelongsTo
+    public function sender(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id', 'id');
+        return $this->belongsTo(User::class, 'sender_id', 'id');
+    }
+
+    public function receiver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'recevier_id', 'id');
     }
 }

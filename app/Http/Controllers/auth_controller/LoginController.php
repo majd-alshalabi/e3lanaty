@@ -104,6 +104,7 @@ class LoginController extends Controller
         if ($user) {
             $user->currentAccessToken()->delete();
             $user->deleted = true ;
+            $user->name = "user" ;
             $user->save();
 
             return $this->get_response_with_only_message_and_status(200, "Account deleted successfully.");

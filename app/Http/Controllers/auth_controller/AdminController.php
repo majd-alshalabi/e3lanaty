@@ -7,6 +7,7 @@ use App\Models\Ads;
 use App\Models\Comment;
 use App\Models\constant\Constant;
 use App\Models\Favorite;
+use App\Models\FeedBack;
 use App\Models\Like;
 use App\Models\User;
 use App\Models\UserSetting;
@@ -204,6 +205,24 @@ class AdminController extends Controller
         }
         return $this->get_response([], 200, "delete completed");
     }
+
+    public function searchForUsers(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'search_word' => 'required|string',
+        ]);
+
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return $this->get_error_response(401, $messages);
+        }
+        
+        $query = $request->search_word;
+        $users = User::search($query);
+
+        return $this->get_response($users, 200, "search complete");
+    }
     public function sendFeedbackAnswer(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -222,6 +241,7 @@ class AdminController extends Controller
         $user->fcm_token = $userSetting->fcm_token;
         if ($user != null) {
             $current_time = Carbon::now();
+            FeedBack::create(['feed_back' => $request->description, 'sender_id' => $request->user()->id, 'receiver_id' => $request->user_id , "title" => $request->title]);
             $notificationService = new NotificationService();
             $notificationService->sendFeedbackNotificationToOneUser(["title" => $request->title, "description" => $request->description, "created_at" => $current_time], $user, $request->description);
         } else {

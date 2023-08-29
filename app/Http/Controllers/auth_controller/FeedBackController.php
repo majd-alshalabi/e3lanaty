@@ -26,10 +26,15 @@ class FeedBackController extends Controller
         }
 
         $user = $request->user();
-
-        FeedBack::create(['feed_back' => $request->feed_back, 'user_id' => $user->id, "title" => $request->title]);
-
-        return $this->get_response([], 200, "add feedback completed");
+        $feedback = null;
+        if ($user->admin) {
+            $receiver = User::where("id" , $request->receiver_id)->first();
+            $feedback = FeedBack::create(['feed_back' => $request->feed_back, 'sender_id' => $user->id, 'receiver_id' => $receiver->id , "title" => $request->title]);
+        } else {
+            $admin = User::where("admin" , true)->first();
+            $feedback = FeedBack::create(['feed_back' => $request->feed_back, 'sender_id' => $user->id, 'receiver_id' => $admin->id , "title" => $request->title]);
+        }
+        return $this->get_response($feedback, 200, "add feedback completed");
     }
     public function deleteFeedBack(Request $request)
     {
@@ -44,15 +49,57 @@ class FeedBackController extends Controller
 
         $res = FeedBack::where('id', $request->feed_back_id)
             ->delete();
-        if($res == 0){
+        if ($res == 0) {
             return $this->get_error_response(401, "this feedback is no longer exist");
         }
         return $this->get_response([], 200, "delete feedback completed");
     }
 
-    public function getAllFeedback(Request $request)
+    public function getAllUserSentFeedBack(Request $request)
     {
-        $feedbacks = FeedBack::with('users')->paginate(Constant::NUM_OF_PAGE);
-        return $this->get_response($feedbacks->items(), 200, "get all favorite completed");
+        $user = $request->user();
+        $admin_id = $user->id;
+
+        $feedbacks = FeedBack::where('receiver_id', $admin_id)->get();
+        $userIds = $feedbacks->pluck('sender_id')->unique()->toArray();
+
+        $users = User::whereIn('id', $userIds)->get();
+        foreach ($users as $currentUser) {
+            $currentUser->not_readed_feedback_count = $feedbacks->where("sender_id" , $currentUser->id)->where("read_status" , false)->count();
+        }
+
+        return $this->get_response($users, 200, "Get all users with unread feedback count");
+    }
+
+    public function getFeedbackById(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return $this->get_error_response(401, $messages);
+        }
+
+        $feedbacks = FeedBack::where("sender_id" , $request->id)->orWhere("receiver_id" , $request->id)->with("sender")->with("receiver")->get();
+        return $this->get_response($feedbacks, 200, "get all favorite completed");
+    }
+
+    public function updateFeedbackToReaded(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return $this->get_error_response(401, $messages);
+        }
+
+        $feedbacks = FeedBack::where("id" , $request->id)->first();
+        $feedbacks->read_status = true ;
+        $feedbacks->save();
+        return $this->get_response($feedbacks, 200, "get all favorite completed");
     }
 }

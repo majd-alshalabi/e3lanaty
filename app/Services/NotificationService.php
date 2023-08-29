@@ -26,6 +26,9 @@ class NotificationService
             if($user->notification_type == Constant::ALL_USER_NOTIFICATION_TYPE)
             {
                 return true ;
+            }else if($user->notification_type == Constant::CANCEL_NOTIFICATION_TYPE)
+            {
+                return false ;
             }
             else if ($user->notification_type == Constant::FOLLOWER_NOTIFICATION_TYPE) {
                 if($user->user_id == null)return false ;

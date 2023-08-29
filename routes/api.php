@@ -56,11 +56,14 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/update_profile_image', [UserSettingController::class, 'uploadImage']);
     Route::post('/update_name', [UserSettingController::class, 'updateName']);
     Route::get('/get_all_user', [AdminController::class, 'getAllUser']);
+    Route::post('/search_for_user', [AdminController::class, 'searchForUsers']);
     Route::post('/delete_ads', [AdsController::class, 'deleteAds']);
     Route::get('/get_all_ads_with_pending_status', [AdsController::class, 'getAllAdsWithPenddingState']);
     Route::get('/get_user_pending_ads', [AdsController::class, 'getUserPendingAds']);
     Route::get('/get_all_favorite', [FavoriteController::class, 'getAllFavorite']);
-    Route::get('/get_all_feedback', [FeedBackController::class, 'getAllFeedback']);
+    Route::get('/get_all_feedback', [FeedBackController::class, 'getAllUserSentFeedBack']);
+    Route::post('/get_feed_back_by_id', [FeedBackController::class, 'getFeedbackById']);
+    Route::post('/update_feed_back_to_readed', [FeedBackController::class, 'updateFeedbackToReaded']);
     Route::post('/like', [LikeController::class, 'addLike']);
     Route::post('/favorite', [FavoriteController::class, 'addFavorite']);
     Route::post('/comment', [CommentController::class, 'addComment']);

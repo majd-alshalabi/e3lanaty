@@ -36,6 +36,9 @@ class Constant
 
     public const FOLLOWER_NOTIFICATION_TYPE = 1;
 
+    public const CANCEL_NOTIFICATION_TYPE = 2;
+
+
 
 
     public const SERVER_KEY = 'AAAA2G_ymwQ:APA91bGp1jkxeHRBIQp18Nx_KrvqydQH8_-3ku_bTgNyDURWVavC1SShq5np1knqJaD6qiMYq1stHcV1ot417HljTsq4tFbe_OVzuOHNmsTMxU-Zs-WMTwePQTDnVMcrTos6BlfluA0I';
