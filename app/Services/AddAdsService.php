@@ -104,6 +104,18 @@ class AddAdsService
                 ]);
             }
         }
+        $description = array();
+        if ($request->description != null) {
+            foreach ($request->description as $item) {
+                $description[] = AdsDescription::create([
+                    'image' => $item['image'],
+                    'ads_id' => $post->id,
+                    'html_code' => $item['html_code'],
+                    'description' => $item['description'],
+                ]);
+            }
+        }
+        $post->description = $description;
         $post->user = $user;
         $post->images = $images;
         $post->like = 0;

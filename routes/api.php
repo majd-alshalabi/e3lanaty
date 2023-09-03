@@ -30,8 +30,12 @@ use Spatie\LaravelIgnition\Http\Controllers\UpdateConfigController;
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/login_admin', [LoginController::class, 'loginAdmin']);
 Route::post('/register', [RegisterController::class, 'register']);
+Route::post('/verify', [RegisterController::class, 'verifyAccount']);
+Route::post('/resend', [RegisterController::class, 'resendCode']);
 Route::post('/register_admin', [RegisterController::class, 'registerAdmin']);
 Route::post('/check_email', [RegisterController::class, 'checkEmail']);
+Route::post('/reset_password', [RegisterController::class, 'resetPassword']);
+Route::post('/reset_password_verification', [RegisterController::class, 'resetPasswordVerification']);
 Route::get('/storage/public/images/{filename}', [AdsController::class, 'getImage']);
 Route::post('/get_all_ads_with_accepted_status', [AdsController::class, 'getAllAdsWithAcceptedState']);
 Route::post('/get_all_comment', [CommentController::class, 'getAllComment']);
@@ -41,6 +45,7 @@ Route::get('/get_admin_or_star_ads', [AdminController::class, 'getAdminAndStared
 Route::post('/update_fcm_token', [UpdateFcmTokenController::class, 'updateFcmToken']);
 Route::post('/get_ads_by_user_id', [AdsController::class, 'getAdsByUserId']);
 Route::get('/get_all_ads', [AdsController::class, 'getAllAds']);
+Route::post('/update_notification_setting', [UserSettingController::class, 'updateNotificationType']);
 
 
 
@@ -68,10 +73,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/favorite', [FavoriteController::class, 'addFavorite']);
     Route::post('/comment', [CommentController::class, 'addComment']);
     Route::post('/follow', [FollowController::class, 'addFollow']);
+    Route::post('/update_password', [RegisterController::class, 'updatePassword']);
     Route::get('/get_follower_following_favorite_count', [FollowController::class, 'getFollowingAndFollowerAndFavorite']);
     Route::post('/get_following_or_follower', [FollowController::class, 'getFollowerOrFollowing']);
     Route::post('/add_feed_back', [FeedBackController::class, 'addFeedback']);
-    Route::post('/update_notification_setting', [UserSettingController::class, 'updateNotificationType']);
 });
 
 Route::group(['middleware' => 'auth:sanctum' , "prefix" => "admin"], function () {
