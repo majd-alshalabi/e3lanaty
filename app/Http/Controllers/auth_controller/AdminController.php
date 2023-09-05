@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\auth_controller;
 
 use App\Http\Controllers\Controller;
+use App\Mail\FeedbackMail;
 use App\Models\Ads;
 use App\Models\Comment;
 use App\Models\constant\Constant;
@@ -17,6 +18,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
@@ -244,6 +246,7 @@ class AdminController extends Controller
             FeedBack::create(['feed_back' => $request->description, 'sender_id' => $request->user()->id, 'receiver_id' => $request->user_id , "title" => $request->title]);
             $notificationService = new NotificationService();
             $notificationService->sendFeedbackNotificationToOneUser(["title" => $request->title, "description" => $request->description, "created_at" => $current_time], $user, $request->description);
+            Mail::to($user->email)->send(new FeedbackMail($request->title , $request->description));
         } else {
             return $this->get_error_response(401, "user not fount");
         }
