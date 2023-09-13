@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->nullable()->unsigned();
             $table->integer('notification_type')->default(0);
             $table->string('fcm_token')->nullable()->unique();
+            $table->string('unique_key')->nullable()->unique();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });

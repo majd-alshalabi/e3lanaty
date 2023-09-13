@@ -14,6 +14,7 @@ class UserSetting extends Model
         'user_id',
         'notification_type',
         'fcm_token',
+        'unique_key',
     ];
     public function users(): BelongsTo
     {

@@ -83,7 +83,7 @@ class RegisterController extends Controller
         }
         if ($userDeleted) {
             $token = $user->createToken('authToken');
-            UserSetting::where('fcm_token', $request->fcm_token)->update(['user_id' => $user->id]);
+            UserSetting::where('unique_key', $request->unique_key)->update(['user_id' => $user->id]);
             return $this->get_response_for_login($user, 200, "resgister completed", $token->plainTextToken);
         }
     }
@@ -120,7 +120,7 @@ class RegisterController extends Controller
         ]);
 
         $token = $user->createToken('authToken');
-        UserSetting::where('fcm_token', $request->fcm_token)->update(['user_id' => $user->id]);
+        UserSetting::where('unique_key', $request->unique_key)->update(['user_id' => $user->id]);
         Verification::where("email", $verification->email)->delete();
         return $this->get_response_for_login($user, 200, "resgister completed", $token->plainTextToken);
     }
@@ -167,7 +167,7 @@ class RegisterController extends Controller
             return $this->get_error_response(401, ["not valid email"]);
         }
         $randomNumber = random_int(1000, 9999);
-        $email = $user->admin ? "alshalabi211@gmail.com" : $request->email ;
+        $email = $user->admin ? "salah.deen555@gmail.com" : $request->email ;
         Mail::to($email)->send(new MyTestMail($randomNumber));
         ResetPassword::where("email" , $request->email)->delete();
         ResetPassword::create(

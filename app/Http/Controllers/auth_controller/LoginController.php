@@ -39,7 +39,7 @@ class LoginController extends Controller
                 return $this->get_error_response(401, "this account is deleted try registering with this account");   
             }
             $token = $user->createToken('authToken');
-            UserSetting::where('fcm_token' , $request->fcm_token)->update(['user_id' => $user->id]);
+            UserSetting::where('unique_key' , $request->unique_key)->update(['user_id' => $user->id]);
             return $this->get_response_for_login($user, 200, "login completed", $token->plainTextToken);
         }
         return $this->get_error_response(401, "enter valid email and password");

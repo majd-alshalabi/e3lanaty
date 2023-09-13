@@ -17,7 +17,7 @@ class UserSettingController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'notification_type' => 'required|integer',
-            'fcm_token' => 'required|string'
+            'unique_key' => 'required|string'
         ]);
 
 
@@ -26,17 +26,18 @@ class UserSettingController extends Controller
             return $this->get_error_response(401, $messages);
         }
 
-        $res = UserSetting::where('fcm_token', $request->fcm_token)
+        $res = UserSetting::where('unique_key', $request->unique_key)
             ->update([
                 'notification_type' => $request->notification_type,
             ]);
         if($res != 0){
-            $user_setting = UserSetting::where('fcm_token', $request->fcm_token)->first();
+            $user_setting = UserSetting::where('unique_key', $request->unique_key)->first();
             return $this->get_response($user_setting, 200, "update setting completed completed");
         }
         else 
         {
             $user_setting = UserSetting::create([
+                'unique_key', $request->unique_key,
                 'fcm_token' => $request->fcm_token,
                 'notification_type' => $request->notification_type,
             ]);

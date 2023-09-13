@@ -18,7 +18,7 @@ class NotificationService
             'notificationType' => $ads_notification_type,
             'extra' => $ads,
         ];
-        $users = UserSetting::where('user_id', '!=', $user_id)->get();
+        $users = UserSetting::where('user_id', '!=', $user_id)->orWhere("user_id",null)->get();
         $tokens = $users->filter(function ($user)  use ($user_id) {
             if($user->fcm_token == null){
                 return false;
@@ -125,11 +125,12 @@ class NotificationService
             'extra' => $feedback,
         ];
         $tokens = [$user->fcm_token];
+
         $data = [
             "registration_ids" => $tokens,
+            "priority" => "high",
             'data' => $extraData,
         ];
-
         $dataString = json_encode($data);
 
         $headers = [
@@ -155,7 +156,7 @@ class NotificationService
 
         // Check for errors
         if ($response === false) {
-            curl_error($ch);
+            // $error = curl_error($ch);
         }
         // Close cURL
         curl_close($ch);
