@@ -4,6 +4,7 @@ namespace App\Http\Controllers\auth_controller;
 
 use App\Http\Controllers\Controller;
 use App\Mail\FeedbackMail;
+use App\Mail\FeedbackMailVersion2;
 use App\Models\Ads;
 use App\Models\Comment;
 use App\Models\constant\Constant;
@@ -29,9 +30,9 @@ class AdminController extends Controller
         $type = Constant::NORMAL_ADS_TYPE;
 
         $ads = Ads::where(function ($query) {
-                $query->where('stared', true)
-                    ->orWhere('admin', true);
-            })
+            $query->where('stared', true)
+                ->orWhere('admin', true);
+        })
             ->where('ads_type', $type)
             ->orderBy('priorty', 'desc')
             ->orderBy('created_at', 'desc')
@@ -64,29 +65,26 @@ class AdminController extends Controller
         $ads = Ads::where("id", $request->ads_id)->first();
         $ads->status = Constant::ADS_ACCEPTED_STATE;
         $ads->save();
-        try {
-            $notificationService = new NotificationService();
-            $ads = Ads::where('id', $request->ads_id)
-                ->with('advantages')
-                ->with('images')
-                ->first();
-            $user = User::where('id', '=', $ads->user_id)->get();
-            $like = Like::where('ads_id', '=', $ads->id)->get();
-            $comment = Comment::where('ads_id', '=', $ads->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
-            $comment_count = Comment::where('ads_id', '=', $ads->id)->count();
+        $notificationService = new NotificationService();
+        $ads = Ads::where('id', $request->ads_id)
+            ->with('advantages')
+            ->with('images')
+            ->first();
+        $user = User::where('id', '=', $ads->user_id)->get();
+        $like = Like::where('ads_id', '=', $ads->id)->get();
+        $comment = Comment::where('ads_id', '=', $ads->id)->orderBy('created_at', 'desc')->paginate(Constant::NUM_OF_PAGE);
+        $comment_count = Comment::where('ads_id', '=', $ads->id)->count();
 
 
-            if (count($user) == 0) {
-                $ads->user = null;
-            } else {
-                $ads->user = $user[0];
-            }
-            $ads->like = count($like);
-            $ads->comment = $comment->items();
-            $ads->comment_count = $comment_count;
-            $notificationService->sendNotification($ads, $ads->user_id);
-        } catch (e) {
+        if (count($user) == 0) {
+            $ads->user = null;
+        } else {
+            $ads->user = $user[0];
         }
+        $ads->like = count($like);
+        $ads->comment = $comment->items();
+        $ads->comment_count = $comment_count;
+        $notificationService->sendNotification($ads, $ads->user_id);
         return $this->get_response($ads, 200, "completed");
     }
 
@@ -219,7 +217,7 @@ class AdminController extends Controller
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
         }
-        
+
         $query = $request->search_word;
         $users = User::search($query);
 
@@ -243,10 +241,14 @@ class AdminController extends Controller
         $user->fcm_token = $userSetting->fcm_token;
         if ($user != null) {
             $current_time = Carbon::now();
-            FeedBack::create(['feed_back' => $request->description, 'sender_id' => $request->user()->id, 'receiver_id' => $request->user_id , "title" => $request->title]);
+            FeedBack::create(['feed_back' => $request->description, 'sender_id' => $request->user()->id, 'receiver_id' => $request->user_id, "title" => $request->title]);
             $notificationService = new NotificationService();
             $notificationService->sendFeedbackNotificationToOneUser(["title" => $request->title, "description" => $request->description, "created_at" => $current_time], $user, $request->description);
-            Mail::to($user->email)->send(new FeedbackMail($request->title , $request->description));
+            if ($request->html != null) {
+                Mail::to($user->email)->send(new FeedbackMailVersion2($request->html));
+            } else {
+                Mail::to($user->email)->send(new FeedbackMail($request->title, $request->description));
+            }
         } else {
             return $this->get_error_response(401, "user not fount");
         }

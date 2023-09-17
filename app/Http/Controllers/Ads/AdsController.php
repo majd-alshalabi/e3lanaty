@@ -133,8 +133,12 @@ class AdsController extends Controller
             }
         }
         $ads->images = $images;
-        $ads->user = $request->user();
-
+        $ads->user = User::where('id' , $ads->user_id)->first();
+        $ads->updated = true ;
+        if ($request->send_notification) {
+            $notificationService = new NotificationService();
+            $notificationService->sendNotification($ads, $ads->user_id,true);
+        }
         return $this->get_response([$ads], 200, "Update completed");
     }
     public function deleteAds(Request $request)

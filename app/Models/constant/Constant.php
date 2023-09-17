@@ -28,15 +28,11 @@ class Constant
     public const ADS_NOTIFICATION_TYPE = 1;
     public const FEED_BACK_NOTIFICATION_TYPE = 2;
     public const COMMENT_NOTIFICATION_TYPE = 3;
+    public const UPDATE_ADS_NOTIFICATION_TYPE = 4;
 
     public const NUM_OF_PAGE = 10;
     public const NOTIFICATION_DEFAULT_TYPE = 0;
 
-    public const ALL_USER_NOTIFICATION_TYPE = 0;
-
-    public const FOLLOWER_NOTIFICATION_TYPE = 1;
-
-    public const CANCEL_NOTIFICATION_TYPE = 2;
 
 
 

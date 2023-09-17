@@ -8,6 +8,7 @@ use App\Models\Comment;
 use App\Models\constant\Constant;
 use App\Models\Posts;
 use App\Models\User;
+use App\Models\UserSetting;
 use App\response_trait\MyResponseTrait;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
@@ -30,10 +31,10 @@ class CommentController extends Controller
         }
 
         $user = $request->user();
-        if($user->blocked){
+        if ($user->blocked) {
             return $this->get_error_response(401, "user is blocked");
         }
-        
+
         $ads = Ads::find($request->ads_id);
 
         if (!$ads) {
@@ -47,7 +48,7 @@ class CommentController extends Controller
         ]);
 
         $comment->user = $user;
-        $adsUser = User::where("id", $ads->user_id)->first();
+        $adsUser = UserSetting::where("user_id", $ads->user_id)->first();
 
         if ($adsUser->id !== $user->id) {
             $notificationService = new NotificationService();
@@ -66,9 +67,14 @@ class CommentController extends Controller
             $messages = $validator->messages();
             return $this->get_error_response(401, $messages);
         }
-        $comment = Comment::where('ads_id', $request->ads_id)->orderBy('created_at', 'desc')
-            ->paginate(Constant::NUM_OF_PAGE)
-        ;
+        $comment = null;
+        if ($request->ads_id == -1) {
+            $comment = Comment::orderBy('created_at', 'desc')
+            ->paginate(Constant::NUM_OF_PAGE);
+        } else {
+            $comment = Comment::where('ads_id', $request->ads_id)->orderBy('created_at', 'desc')
+                ->paginate(Constant::NUM_OF_PAGE);
+        }
         foreach ($comment as $item) {
             $user = User::where('id', '=', $item->user_id)->get();
             $item->user = $user[0];

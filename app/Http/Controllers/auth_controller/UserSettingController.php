@@ -16,7 +16,7 @@ class UserSettingController extends Controller
     public function updateNotificationType(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'notification_type' => 'required|integer',
+            'notification_type' => 'required|string',
             'unique_key' => 'required|string'
         ]);
 
