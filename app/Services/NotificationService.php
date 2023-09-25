@@ -18,8 +18,17 @@ class NotificationService
             'notificationType' => $ads_notification_type,
             'extra' => $ads,
         ];
-        $users = UserSetting::where('user_id', '!=', $user_id)->orWhere("user_id",null)->get();
+        $users = null ;
+        if($update){
+            $users = UserSetting::get();
+        }else {
+            $users = UserSetting::where(function ($query) use ($user_id) {
+                $query->where('user_id', '!=', $user_id)
+                    ->orWhereNull('user_id');
+            })->get();
+        }
         $tokens = $users->filter(function ($user)  use ($user_id , $ads) {
+            if($user->user_id == $user_id)return true ;
             if ($user->fcm_token == null) {
                 return false;
             }

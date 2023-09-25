@@ -28,11 +28,17 @@ class UpdateFcmTokenController extends Controller
         DB::beginTransaction();
 
         try {
-            UserSetting::where('unique_key' , $request->unique_key)->delete();
+            $userSetting = UserSetting::where('unique_key', $request->unique_key)->first();
+            $notification_type = 111111;
+            if ($userSetting != null) {
+                $notification_type = $userSetting->notification_type;
+                $userSetting->delete();
+            }
             UserSetting::create([
                 'fcm_token' => $request->token,
                 'unique_key' => $request->unique_key,
                 'user_id' => $currentUser != null ? $currentUser->id : null,
+                'notification_type' => $notification_type,
             ]);
             DB::commit();
             return $this->get_response($request->token, 200, "update setting completed");
@@ -40,6 +46,5 @@ class UpdateFcmTokenController extends Controller
             DB::rollback();
             return $this->get_error_response(401, 'you have not setting to update!');
         }
-
     }
 }
