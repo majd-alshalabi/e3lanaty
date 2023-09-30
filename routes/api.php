@@ -9,6 +9,7 @@ use App\Http\Controllers\auth_controller\AdminController;
 use App\Http\Controllers\auth_controller\FeedBackController;
 use App\Http\Controllers\auth_controller\FollowController;
 use App\Http\Controllers\auth_controller\LoginController;
+use App\Http\Controllers\auth_controller\PrivacyController;
 use App\Http\Controllers\auth_controller\RegisterController;
 use App\Http\Controllers\auth_controller\UpdateFcmTokenController;
 use App\Http\Controllers\auth_controller\UserSettingController;
@@ -37,6 +38,7 @@ Route::post('/check_email', [RegisterController::class, 'checkEmail']);
 Route::post('/reset_password', [RegisterController::class, 'resetPassword']);
 Route::post('/reset_password_verification', [RegisterController::class, 'resetPasswordVerification']);
 Route::get('/storage/public/images/{filename}', [AdsController::class, 'getImage']);
+Route::get('/get_privacy', [PrivacyController::class, 'getPrivacy']);
 Route::post('/get_all_ads_with_accepted_status', [AdsController::class, 'getAllAdsWithAcceptedState']);
 Route::post('/get_all_comment', [CommentController::class, 'getAllComment']);
 Route::post('/get_ads_by_id', [AdsController::class, 'get_ads_by_id']);
@@ -89,4 +91,6 @@ Route::group(['middleware' => 'auth:sanctum' , "prefix" => "admin"], function ()
     Route::post('/delete_feed_back', [FeedBackController::class, 'deleteFeedback']);
     Route::post('/send_feedback_answer', [AdminController::class, 'sendFeedbackAnswer']);
     Route::post('/update_admin_profile', [UserSettingController::class, 'updateAdminProfileData']);
+    Route::post('/update_privacy', [PrivacyController::class, 'updatePrivacy']);
+
 });
