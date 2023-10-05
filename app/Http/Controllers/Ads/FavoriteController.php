@@ -7,6 +7,7 @@ use App\Models\Ads;
 use App\Models\Comment;
 use App\Models\constant\Constant;
 use App\Models\Favorite;
+use App\Models\User;
 use App\Models\Like;
 use App\Models\Posts;
 use App\response_trait\MyResponseTrait;
@@ -59,29 +60,39 @@ class FavoriteController extends Controller
         return $this->get_response($request->favorite, 200, "add favorite completed");
     }
     public function getAllFavorite(Request $request)
-    {
-        $user = $request->user();
-        $favorits = Favorite::where('user_id' , '=' , $user->id)->get();
-        foreach ($favorits as $favorit) {
-            $ads = Ads::with('advantages')
-                ->with('images')->where('id', $favorit->ads_id)->first()
-            ;
-            $like = Like::where('ads_id', '=', $ads->id)->get();
-            $comment = Comment::where('ads_id', '=', $ads->id)->paginate(Constant::NUM_OF_PAGE);
-            $comment_count = Comment::where('ads_id', '=', $ads->id)->count();
+{
+    $user = $request->user();
 
-            $ads->user = $user;
-            $isLike = Like::where([
-                ['ads_id', '=', $ads->id],
-                ['user_id', '=', $user->id]
-            ])->count() > 0;
-            $ads->isLike = $isLike;
-            $ads->like = count($like);
-            $ads->comment = $comment->items();
-            $ads->comment_count = $comment_count;
-            $ads->isInFavorite = true ;
-            $favorit->ads = $ads;
-        }
-        return $this->get_response($favorits, 200, "get all favorite completed");
+    // Retrieve favorites with related ads information in a single query
+    $favorites = Favorite::where('user_id', $user->id)
+        ->with(['ads' => function ($query) {
+            $query->with('advantages')
+                ->with('images');
+        }])
+        ->get();
+
+    foreach ($favorites as $favorite) {
+        $ads = $favorite->ads;
+
+        // Fetch the number of likes for this ad
+        $likeCount = $ads->likes()->count();
+
+        // Check if the current user has liked this ad
+        $isLike = $ads->likes()->where('user_id', $user->id)->exists();
+
+        // Fetch comments for the ad with pagination
+        $comments = $ads->comments()
+            ->paginate(Constant::NUM_OF_PAGE);
+
+        $ads->user = User::where("id" , $ads->user_id)->first();
+        $ads->isLike = $isLike;
+        $ads->like = $likeCount;
+        $ads->comment = $comments->items();
+        $ads->comment_count = $comments->total();
+        $ads->isInFavorite = true;
     }
+
+    return $this->get_response($favorites, 200, "get all favorite completed");
+}
+
 }
